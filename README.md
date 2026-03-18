@@ -3,7 +3,7 @@
 SpeedPlane is a frontend-only React app for visual speed comparison of objects, animals, vehicles, and fictional characters on parallel lanes.
 
 ## Product summary
-Moved from: `/Users/nikolaborisic/Speed comparison/docs/PRD.md`
+Moved from: [docs/PRD.md](./docs/PRD.md)
 
 - Goal: visually compare speeds using deterministic movement, not static numbers.
 - Core formula: `distance = speed * elapsedTime`.
@@ -13,7 +13,7 @@ Moved from: `/Users/nikolaborisic/Speed comparison/docs/PRD.md`
 - MVP target users: students, educators, enthusiasts, and pop-culture users.
 
 ## Architecture summary
-Moved from: `/Users/nikolaborisic/Speed comparison/docs/TAD.md`
+Moved from: [docs/TAD.md](./docs/TAD.md)
 
 - Frontend-only (no backend in MVP).
 - Single shared simulation engine (no per-track timers).
@@ -24,11 +24,11 @@ Moved from: `/Users/nikolaborisic/Speed comparison/docs/TAD.md`
 ## Execution docs
 Moved from integration docs hub and consolidated links:
 
-- Product requirements: `/Users/nikolaborisic/Speed comparison/docs/PRD.md`
-- Technical architecture: `/Users/nikolaborisic/Speed comparison/docs/TAD.md`
-- Implementation plan: `/Users/nikolaborisic/Speed comparison/docs/IMPLEMENTATION_PLAN.md`
-- Testing strategy: `/Users/nikolaborisic/Speed comparison/docs/TESTING.md`
-- Integration docs hub: `/Users/nikolaborisic/Speed comparison/docs/integration/README.md`
+- Product requirements: [docs/PRD.md](./docs/PRD.md)
+- Technical architecture: [docs/TAD.md](./docs/TAD.md)
+- Implementation plan: [docs/IMPLEMENTATION_PLAN.md](./docs/IMPLEMENTATION_PLAN.md)
+- Testing strategy: [docs/TESTING.md](./docs/TESTING.md)
+- Integration docs hub: [docs/integration/README.md](./docs/integration/README.md)
 
 ## Workflow order
 1. Confirm scope in PRD.

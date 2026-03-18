@@ -15,11 +15,11 @@
   min-height: 2.25rem;
   min-width: 6rem;
   padding: 0.45rem 0.9rem;
-  transition: transform 100ms ease, opacity 100ms ease, border-color 100ms ease;
+  transition: opacity 100ms ease, border-color 100ms ease;
 }
 
 .ui-button:hover:not(:disabled) {
-  transform: translateY(-1px);
+  border-color: rgba(v.$color-line, 1);
 }
 
 .ui-button:disabled {

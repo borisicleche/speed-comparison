@@ -7,6 +7,18 @@ type ProgressProps = HTMLAttributes<HTMLDivElement> & {
   value: number;
 };
 
+const clampPercent = (value: number): number => {
+  if (value < 0) {
+    return 0;
+  }
+
+  if (value > 100) {
+    return 100;
+  }
+
+  return value;
+};
+
 export const Progress = forwardRef<HTMLDivElement, ProgressProps>(
   ({ className, value, ...props }, ref) => {
     const clampedValue = clampPercent(value);
@@ -23,15 +35,3 @@ export const Progress = forwardRef<HTMLDivElement, ProgressProps>(
   },
 );
 Progress.displayName = "Progress";
-
-const clampPercent = (value: number): number => {
-  if (value < 0) {
-    return 0;
-  }
-
-  if (value > 100) {
-    return 100;
-  }
-
-  return value;
-};
