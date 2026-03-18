@@ -99,16 +99,7 @@ export const DistanceInput = () => {
         <Select
           id="distance-unit-select"
           value={draftUnit}
-          onChange={(event) => {
-            const nextUnit = event.target.value as DistanceUnit;
-            const baseMeters = isDraftValid
-              ? distanceToMeters(parsedAmount, draftUnit)
-              : distance.value;
-            setDraftUnit(nextUnit);
-            setDraftAmount(
-              formatDistanceAmount(metersToDistance(baseMeters, nextUnit)),
-            );
-          }}
+          onChange={(event) => setDraftUnit(event.target.value as DistanceUnit)}
           data-testid="distance-unit-select"
         >
           <option value={DistanceUnit.METERS}>m</option>
