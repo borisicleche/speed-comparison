@@ -1,0 +1,29 @@
+{
+  "name": "speed-plane",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "zustand": "5.0.11"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "4.7.0",
+    "sass": "1.97.3",
+    "typescript": "5.9.3",
+    "vite": "5.4.21"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "bun test",
+    "test": "bun test",
+    "e2e:bundle": "bun build src/main.tsx --outdir dist-e2e --target browser",
+    "e2e:serve": "node scripts/e2eStaticServer.mjs",
+    "test:e2e": "playwright test",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "typecheck:test": "tsc -p tsconfig.test.json --noEmit"
+  }
+}

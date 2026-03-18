@@ -1,0 +1,35 @@
+@use "../../styles/variables" as v;
+
+.ui-card {
+  border: 1px solid rgba(v.$color-line, 0.7);
+  border-radius: 1rem;
+  background: linear-gradient(180deg, rgba(v.$color-ink-700, 0.64), rgba(v.$color-ink-900, 0.96));
+  box-shadow: 0 12px 30px rgba(v.$color-ink-950, 0.38);
+}
+
+.ui-card-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem 1.1rem 0.65rem;
+}
+
+.ui-card-title {
+  font-family: v.$font-display;
+  font-size: 1.45rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.ui-card-description {
+  color: v.$color-text-muted;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.ui-card-content {
+  padding: 0 1.1rem 1.1rem;
+}

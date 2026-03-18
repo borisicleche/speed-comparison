@@ -1,0 +1,23 @@
+@use "../../styles/variables" as v;
+
+.ui-select {
+  appearance: none;
+  background:
+    linear-gradient(180deg, rgba(v.$color-ink-700, 0.8), rgba(v.$color-ink-900, 0.85)),
+    linear-gradient(90deg, transparent calc(100% - 2.1rem), rgba(v.$color-line, 0.65) calc(100% - 2.1rem));
+  border: 1px solid rgba(v.$color-line, 0.85);
+  border-radius: 0.65rem;
+  color: v.$color-text;
+  font-family: inherit;
+  font-size: 0.84rem;
+  font-weight: 600;
+  min-height: 2.05rem;
+  padding: 0.35rem 2.35rem 0.35rem 0.7rem;
+  transition: border-color 100ms ease, box-shadow 100ms ease;
+}
+
+.ui-select:focus-visible {
+  border-color: rgba(v.$color-accent-cool, 0.75);
+  box-shadow: 0 0 0 2px rgba(v.$color-accent-cool, 0.2);
+  outline: none;
+}
