@@ -1,0 +1,42 @@
+language: "en-US"
+tone_instructions: "Be concise and direct. Focus on correctness, architecture adherence, and test coverage."
+early_access: false
+
+reviews:
+  profile: "chill"
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - main
+
+  path_instructions:
+    - path: "src/engine/**"
+      instructions: |
+        Enforce simulation engine invariants:
+        - elapsedTimeSeconds is the single source of truth for time
+        - Position must always be derived: distance = speedMs * elapsedTimeSeconds
+        - No per-track timers allowed
+        - Speed conversions must go through utils/unitConversion.ts
+    - path: "src/store/**"
+      instructions: |
+        Check that:
+        - No ad-hoc conversions exist (all via utils/)
+        - State shape uses value (base unit), amount (user-facing), unit (enum)
+        - Actions use SimulationActionType enum, no magic strings
+    - path: "src/components/**"
+      instructions: |
+        UI layer rules:
+        - SCSS only, no Tailwind or inline styles
+        - No conversion logic — delegate to utils/
+        - Positioning via transform: translateX only
+    - path: "**/*.test.ts"
+      instructions: "Verify tests cover edge cases and engine invariants. Flag missing coverage for new logic."
+
+chat:
+  auto_reply: true
