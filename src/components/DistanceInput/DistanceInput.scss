@@ -1,0 +1,58 @@
+@use "../../styles/variables" as v;
+
+.distance-input {
+  background: rgba(v.$color-ink-900, 0.42);
+  border: 1px solid rgba(v.$color-line, 0.7);
+  border-radius: 0.9rem;
+  margin-bottom: 1rem;
+  padding: 0.65rem 0.8rem;
+}
+
+.distance-input__status {
+  color: v.$color-text-muted;
+  font-size: 0.84rem;
+  margin: 0 0 0.5rem;
+  text-transform: uppercase;
+
+  span {
+    color: v.$color-text;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+  }
+}
+
+.distance-input__controls {
+  align-items: end;
+  display: grid;
+  gap: 0.6rem;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+
+  label {
+    color: v.$color-text-muted;
+    font-size: 0.75rem;
+    grid-column: 1 / 4;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+}
+
+.distance-input__error {
+  color: rgba(v.$color-accent-hot, 0.95);
+  font-size: 0.78rem;
+  margin: 0.45rem 0 0;
+}
+
+@media (max-width: v.$tablet-breakpoint) {
+  .distance-input__controls {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+
+    label {
+      grid-column: 1 / 3;
+    }
+  }
+
+  .distance-input__controls .ui-button {
+    grid-column: 1 / 3;
+    width: 100%;
+  }
+}

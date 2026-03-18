@@ -1,0 +1,257 @@
+import { describe, expect, test } from "bun:test";
+
+import { SimulationEngine } from "../engine/simulationEngine";
+import { DistanceUnit } from "../utils/unitConversion";
+import { selectTrackVisualStates } from "./simulationSelectors";
+import { createSimulationStore } from "./simulationStore";
+
+describe("simulationStore (zustand)", () => {
+  test("start/pause/reset synchronize shared engine snapshot", () => {
+    const engine = new SimulationEngine();
+    const controllerCalls = { start: 0, stop: 0 };
+
+    const store = createSimulationStore({
+      engine,
+      timeController: {
+        start: () => {
+          controllerCalls.start += 1;
+        },
+        stop: () => {
+          controllerCalls.stop += 1;
+        },
+      },
+    });
+
+    store.getState().startSimulation();
+    engine.advanceTo(0);
+    engine.advanceTo(1200);
+
+    expect(store.getState().simulationState.engine.isRunning).toBe(true);
+    expect(store.getState().simulationState.engine.elapsedTimeSeconds).toBeCloseTo(1.2, 12);
+    expect(controllerCalls.start).toBe(1);
+
+    store.getState().pauseSimulation();
+    engine.advanceTo(2000);
+
+    expect(store.getState().simulationState.engine.isRunning).toBe(false);
+    expect(store.getState().simulationState.engine.elapsedTimeSeconds).toBeCloseTo(1.2, 12);
+
+    store.getState().resetSimulation();
+
+    expect(store.getState().simulationState.engine).toEqual({
+      elapsedTimeSeconds: 0,
+      isRunning: false,
+    });
+  });
+
+  test("setDistance updates reducer distance and engine distance together", () => {
+    const engine = new SimulationEngine();
+
+    const store = createSimulationStore({
+      engine,
+      timeController: {
+        start: () => {},
+        stop: () => {},
+      },
+    });
+
+    store.getState().setDistance(2, DistanceUnit.KILOMETERS);
+
+    expect(store.getState().simulationState.distance).toEqual({
+      amount: 2,
+      unit: DistanceUnit.KILOMETERS,
+      value: 2000,
+    });
+
+    expect(engine.getSnapshot().trackLengthMeters).toBe(2000);
+    expect(engine.getSnapshot().isRunning).toBe(false);
+  });
+
+  test("setDistance keeps engine running when meter distance is unchanged", () => {
+    const engine = new SimulationEngine();
+    const controllerCalls = { start: 0, stop: 0 };
+    const store = createSimulationStore({
+      engine,
+      timeController: {
+        start: () => {
+          controllerCalls.start += 1;
+        },
+        stop: () => {
+          controllerCalls.stop += 1;
+        },
+      },
+    });
+
+    store.getState().startSimulation();
+    engine.advanceTo(0);
+    engine.advanceTo(1000);
+
+    store.getState().setDistance(1000, DistanceUnit.METERS);
+
+    expect(store.getState().simulationState.distance).toEqual({
+      amount: 1000,
+      unit: DistanceUnit.METERS,
+      value: 1000,
+    });
+    expect(store.getState().simulationState.engine.isRunning).toBe(true);
+    expect(store.getState().simulationState.engine.elapsedTimeSeconds).toBeCloseTo(1, 12);
+    expect(engine.getSnapshot().isRunning).toBe(true);
+    expect(controllerCalls.start).toBe(1);
+    expect(controllerCalls.stop).toBe(0);
+  });
+
+  test("setDistance ignores invalid values", () => {
+    const engine = new SimulationEngine();
+    const store = createSimulationStore({
+      engine,
+      timeController: {
+        start: () => {},
+        stop: () => {},
+      },
+    });
+
+    store.getState().setDistance(0, DistanceUnit.METERS);
+    store.getState().setDistance(-1, DistanceUnit.KILOMETERS);
+    store.getState().setDistance(Number.NaN, DistanceUnit.METERS);
+
+    expect(store.getState().simulationState.distance).toEqual({
+      amount: 1,
+      unit: DistanceUnit.KILOMETERS,
+      value: 1000,
+    });
+    expect(engine.getSnapshot().trackLengthMeters).toBe(1000);
+  });
+
+  test("track management actions mutate reducer state through zustand actions", () => {
+    const store = createSimulationStore({
+      timeController: {
+        start: () => {},
+        stop: () => {},
+      },
+    });
+
+    store.getState().addTrack("train");
+    expect(store.getState().simulationState.tracks[2]).toEqual({
+      id: "track-3",
+      objectId: "train",
+    });
+
+    store.getState().setTrackObject("track-1", "cheetah");
+    expect(store.getState().simulationState.tracks[0].objectId).toBe("cheetah");
+
+    store.getState().removeTrack("track-2");
+    expect(store.getState().simulationState.tracks.map((track) => track.id)).toEqual([
+      "track-1",
+      "track-3",
+    ]);
+  });
+
+  test("invalid control transitions do not trigger engine/time controller side effects", () => {
+    const engine = new SimulationEngine();
+    const controllerCalls = { start: 0, stop: 0 };
+
+    const store = createSimulationStore({
+      engine,
+      timeController: {
+        start: () => {
+          controllerCalls.start += 1;
+        },
+        stop: () => {
+          controllerCalls.stop += 1;
+        },
+      },
+    });
+
+    store.getState().pauseSimulation();
+    store.getState().resetSimulation();
+    expect(controllerCalls.stop).toBe(0);
+    expect(engine.getSnapshot()).toEqual({
+      elapsedTimeSeconds: 0,
+      isRunning: false,
+      trackLengthMeters: 1000,
+    });
+
+    store.getState().startSimulation();
+    store.getState().startSimulation();
+    expect(controllerCalls.start).toBe(1);
+  });
+
+  test("reset returns all lane visual positions to start", () => {
+    const engine = new SimulationEngine();
+
+    const store = createSimulationStore({
+      engine,
+      timeController: {
+        start: () => {},
+        stop: () => {},
+      },
+    });
+
+    store.getState().addTrack("train");
+    store.getState().startSimulation();
+    engine.advanceTo(0);
+    engine.advanceTo(3500);
+
+    const beforeReset = selectTrackVisualStates(store.getState().simulationState);
+    expect(beforeReset.every((track) => track.clampedDistanceMeters > 0)).toBe(true);
+
+    store.getState().resetSimulation();
+
+    const afterReset = selectTrackVisualStates(store.getState().simulationState);
+    expect(afterReset.every((track) => track.clampedDistanceMeters === 0)).toBe(true);
+    expect(afterReset.every((track) => track.progressPercent === 0)).toBe(true);
+  });
+
+  test("default browser raf controller binds global context and advances elapsed time", () => {
+    const originalRaf = globalThis.requestAnimationFrame;
+    const originalCancelRaf = globalThis.cancelAnimationFrame;
+    type RafCallback = (timestampMs: number) => void;
+    let queuedCallback: RafCallback | undefined;
+
+    globalThis.requestAnimationFrame = function requestAnimationFrameMock(
+      this: typeof globalThis,
+      callback: RafCallback,
+    ): number {
+      if (this !== globalThis) {
+        throw new TypeError("Illegal invocation");
+      }
+
+      queuedCallback = callback;
+
+      return 1;
+    };
+    globalThis.cancelAnimationFrame = function cancelAnimationFrameMock(
+      this: typeof globalThis,
+      _handle: number,
+    ): void {
+      if (this !== globalThis) {
+        throw new TypeError("Illegal invocation");
+      }
+    };
+
+    try {
+      const engine = new SimulationEngine();
+      const store = createSimulationStore({ engine });
+
+      store.getState().startSimulation();
+      expect(store.getState().simulationState.engine.isRunning).toBe(true);
+      expect(queuedCallback).toBeDefined();
+
+      const onFrame = queuedCallback;
+
+      if (!onFrame) {
+        throw new Error("Expected requestAnimationFrame callback to be queued");
+      }
+
+      onFrame(0);
+      onFrame(1000);
+
+      expect(store.getState().simulationState.engine.elapsedTimeSeconds).toBeCloseTo(1, 12);
+
+      store.getState().destroyStore();
+    } finally {
+      globalThis.requestAnimationFrame = originalRaf;
+      globalThis.cancelAnimationFrame = originalCancelRaf;
+    }
+  });
+});

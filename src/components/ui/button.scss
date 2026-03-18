@@ -1,0 +1,43 @@
+@use "../../styles/variables" as v;
+
+.ui-button {
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: 0.65rem;
+  color: v.$color-text;
+  cursor: pointer;
+  display: inline-flex;
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 650;
+  gap: 0.35rem;
+  justify-content: center;
+  min-height: 2.25rem;
+  min-width: 6rem;
+  padding: 0.45rem 0.9rem;
+  transition: opacity 100ms ease, border-color 100ms ease;
+}
+
+.ui-button:hover:not(:disabled) {
+  border-color: rgba(v.$color-line, 1);
+}
+
+.ui-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.ui-button--primary {
+  background: linear-gradient(150deg, rgba(v.$color-accent-cool, 0.35), rgba(v.$color-accent-cool, 0.15));
+  border-color: rgba(v.$color-accent-cool, 0.45);
+}
+
+.ui-button--secondary {
+  background: rgba(v.$color-ink-700, 0.45);
+  border-color: rgba(v.$color-line, 0.9);
+}
+
+.ui-button--danger {
+  background: linear-gradient(150deg, rgba(v.$color-accent-hot, 0.35), rgba(v.$color-accent-hot, 0.16));
+  border-color: rgba(v.$color-accent-hot, 0.48);
+}

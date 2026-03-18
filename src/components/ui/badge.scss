@@ -1,0 +1,13 @@
+@use "../../styles/variables" as v;
+
+.ui-badge {
+  border: 1px solid rgba(v.$color-success, 0.45);
+  border-radius: 999px;
+  color: v.$color-success;
+  display: inline-flex;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 0.25rem 0.65rem;
+  text-transform: uppercase;
+}

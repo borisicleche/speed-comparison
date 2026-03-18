@@ -1,0 +1,16 @@
+@use "../../styles/variables" as v;
+
+.ui-progress {
+  background: rgba(v.$color-ink-700, 0.6);
+  border-radius: 999px;
+  height: 0.62rem;
+  margin-top: 0.65rem;
+  overflow: hidden;
+}
+
+.ui-progress__indicator {
+  background: linear-gradient(90deg, v.$color-accent-cool, v.$color-accent-hot 80%);
+  border-radius: inherit;
+  height: 100%;
+  transition: width 120ms linear;
+}
