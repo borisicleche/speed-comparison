@@ -11,6 +11,7 @@ import {
   type SimulationAction,
   type SimulationState,
 } from "./simulationReducer";
+import { selectTrackVisualStates } from "./simulationSelectors";
 
 type TimeControllerLike = Pick<TimeController, "start" | "stop">;
 
@@ -122,6 +123,15 @@ export const createSimulationStore = (
       type: SimulationActionType.ENGINE_SYNC,
       snapshot: engine.getSnapshot(),
     });
+
+    const snapshot = engine.getSnapshot();
+    if (snapshot.isRunning) {
+      const tracks = selectTrackVisualStates(store.getState().simulationState);
+      if (tracks.length > 0 && tracks.every((t) => t.isFinished)) {
+        engine.pause();
+        timeController.stop();
+      }
+    }
   });
 
   store.getState().dispatch({

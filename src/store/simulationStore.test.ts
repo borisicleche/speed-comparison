@@ -202,6 +202,64 @@ describe("simulationStore (zustand)", () => {
     expect(afterReset.every((track) => track.progressPercent === 0)).toBe(true);
   });
 
+  test("engine auto-stops when all tracks finish", () => {
+    const engine = new SimulationEngine();
+    const controllerCalls = { start: 0, stop: 0 };
+
+    const store = createSimulationStore({
+      engine,
+      timeController: {
+        start: () => { controllerCalls.start += 1; },
+        stop: () => { controllerCalls.stop += 1; },
+      },
+    });
+
+    // Default: human-walking (5 km/h) + car-city-average (50 km/h), 1000 m track.
+    // Walking finishes at 720 s — advancing to 720.001 s means both are done.
+    store.getState().startSimulation();
+    engine.advanceTo(0);
+    engine.advanceTo(720001);
+
+    expect(store.getState().simulationState.engine.isRunning).toBe(false);
+    expect(controllerCalls.stop).toBeGreaterThanOrEqual(1);
+  });
+
+  test("engine keeps running when only some tracks finish", () => {
+    const engine = new SimulationEngine();
+
+    const store = createSimulationStore({
+      engine,
+      timeController: { start: () => {}, stop: () => {} },
+    });
+
+    // At 73 s: car-city-average has finished (~1013 m), walking has not (~101 m).
+    store.getState().startSimulation();
+    engine.advanceTo(0);
+    engine.advanceTo(73000);
+
+    expect(store.getState().simulationState.engine.isRunning).toBe(true);
+  });
+
+  test("simulation can be reset and restarted after auto-stop", () => {
+    const engine = new SimulationEngine();
+
+    const store = createSimulationStore({
+      engine,
+      timeController: { start: () => {}, stop: () => {} },
+    });
+
+    store.getState().startSimulation();
+    engine.advanceTo(0);
+    engine.advanceTo(720001); // auto-stop
+
+    expect(store.getState().simulationState.engine.isRunning).toBe(false);
+
+    store.getState().resetSimulation();
+    store.getState().startSimulation();
+
+    expect(store.getState().simulationState.engine.isRunning).toBe(true);
+  });
+
   test("default browser raf controller binds global context and advances elapsed time", () => {
     const originalRaf = globalThis.requestAnimationFrame;
     const originalCancelRaf = globalThis.cancelAnimationFrame;
