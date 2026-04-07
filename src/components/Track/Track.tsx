@@ -76,7 +76,7 @@ export const Track = ({
           <span>0 m</span>
           <span>{formatMeters(track.trackLengthMeters)}</span>
         </div>
-        <div className="track-card__lane" aria-label={`${track.objectName} lane`}>
+        <div className="track-card__lane" aria-label={`${track.objectName} lane`} data-progress={track.progressRatio}>
           <div className="track-card__start" aria-hidden="true" />
           <div
             className="track-card__runner"

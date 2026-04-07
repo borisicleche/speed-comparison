@@ -72,8 +72,8 @@ test.describe("CH-005 simulation controls", () => {
 
 const getProgressValue = async (page: Page, trackId: string): Promise<number> => {
   const value = await page
-    .locator(`[data-testid="track-card-${trackId}"] .ui-progress`)
-    .getAttribute("aria-valuenow");
+    .locator(`[data-testid="track-card-${trackId}"] .track-card__lane`)
+    .getAttribute("data-progress");
 
   if (!value) {
     throw new Error(`Missing progress value for ${trackId}`);
