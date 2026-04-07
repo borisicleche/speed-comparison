@@ -59,7 +59,12 @@ export const selectTrackDerivedState = (
     speedLengthUnit,
     speedTimeUnit,
   );
-  const distanceMeters = speedMs * state.engine.elapsedTimeSeconds;
+  const naturalDistanceMeters = speedMs * state.engine.elapsedTimeSeconds;
+  const isFinished = naturalDistanceMeters >= state.distance.value;
+  const effectiveElapsedSeconds = isFinished
+    ? state.distance.value / speedMs
+    : state.engine.elapsedTimeSeconds;
+  const distanceMeters = isFinished ? state.distance.value : naturalDistanceMeters;
 
   return {
     trackId: track.id,
@@ -70,7 +75,7 @@ export const selectTrackDerivedState = (
     speedTimeUnit,
     speedLengthUnit,
     speedMetersPerSecond: speedMs,
-    elapsedTimeSeconds: state.engine.elapsedTimeSeconds,
+    elapsedTimeSeconds: effectiveElapsedSeconds,
     distanceMeters,
   };
 };

@@ -104,6 +104,65 @@ describe("simulationSelectors", () => {
     expect(visualTrack?.isFinished).toBe(true);
   });
 
+  test("finished track freezes elapsed time at exact finish time", () => {
+    const initialState = createInitialSimulationState();
+    // airplane: 900 km/h = 250 m/s, track 1000 m → finishes at 1000/250 = 4 s
+    const withAirplane = simulationReducer(initialState, {
+      type: SimulationActionType.ADD_TRACK,
+      objectId: "airplane",
+    });
+
+    const syncedState = simulationReducer(withAirplane, {
+      type: SimulationActionType.ENGINE_SYNC,
+      snapshot: {
+        elapsedTimeSeconds: 9,
+        isRunning: true,
+        trackLengthMeters: 1000,
+      },
+    });
+
+    const derived = selectTrackDerivedState(syncedState, "track-3");
+    expect(derived?.elapsedTimeSeconds).toBeCloseTo(4, 10);
+    expect(derived?.distanceMeters).toBe(1000);
+  });
+
+  test("unfinished track uses global elapsed time", () => {
+    const initialState = createInitialSimulationState();
+    // human-walking: 5/3.6 ≈ 1.389 m/s, won't finish 1000 m in 10 s
+    const syncedState = simulationReducer(initialState, {
+      type: SimulationActionType.ENGINE_SYNC,
+      snapshot: {
+        elapsedTimeSeconds: 10,
+        isRunning: true,
+        trackLengthMeters: 1000,
+      },
+    });
+
+    const derived = selectTrackDerivedState(syncedState, "track-1");
+    expect(derived?.elapsedTimeSeconds).toBe(10);
+    expect(derived?.distanceMeters).toBeCloseTo((5 / 3.6) * 10, 12);
+  });
+
+  test("frozen elapsed time does not exceed global clock", () => {
+    const initialState = createInitialSimulationState();
+    const withAirplane = simulationReducer(initialState, {
+      type: SimulationActionType.ADD_TRACK,
+      objectId: "airplane",
+    });
+
+    const syncedState = simulationReducer(withAirplane, {
+      type: SimulationActionType.ENGINE_SYNC,
+      snapshot: {
+        elapsedTimeSeconds: 9,
+        isRunning: true,
+        trackLengthMeters: 1000,
+      },
+    });
+
+    const derived = selectTrackDerivedState(syncedState, "track-3");
+    expect(derived!.elapsedTimeSeconds).toBeLessThanOrEqual(9);
+  });
+
   test("visual selector scales proportionally across all lanes", () => {
     const initialState = createInitialSimulationState();
     const syncedState = simulationReducer(initialState, {
