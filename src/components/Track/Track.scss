@@ -66,19 +66,19 @@
 
 .track-card__runner {
   --runner-size: 1.25rem;
-  background: radial-gradient(circle at 32% 32%, #fff, v.$color-accent-cool 36%, #10829d 82%);
+
+  background: v.$color-accent-cool;
   border: 2px solid rgba(v.$color-text, 0.9);
   border-radius: 50%;
-  box-shadow: 0 0 0.8rem rgba(v.$color-accent-cool, 0.65);
   display: grid;
   height: var(--runner-size);
-  left: var(--lane-edge-offset);
+  left: calc(var(--lane-edge-offset) + (100% - 2 * var(--lane-edge-offset)) * var(--progress-ratio, 0));
   margin-top: calc(var(--runner-size) / -2);
   place-items: center;
   position: absolute;
   text-shadow: 0 1px 2px rgba(v.$color-ink-950, 0.65);
   top: 50%;
-  transform: translateX(calc((100% - (2 * var(--lane-edge-offset))) * var(--progress-ratio, 0) - 50%));
+  transform: translateX(-50%);
   width: var(--runner-size);
 
   span {
@@ -93,10 +93,10 @@
   color: v.$color-text-muted;
   font-size: 0.68rem;
   font-weight: 600;
-  left: var(--lane-edge-offset);
+  left: calc(var(--lane-edge-offset) + (100% - 2 * var(--lane-edge-offset)) * var(--progress-ratio, 0));
   position: absolute;
   top: calc(100% + 0.2rem);
-  transform: translateX(calc((100% - (2 * var(--lane-edge-offset))) * var(--progress-ratio, 0) - 50%));
+  transform: translateX(-50%);
 }
 
 .track-card__metrics {

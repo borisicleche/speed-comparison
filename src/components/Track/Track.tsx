@@ -1,4 +1,4 @@
-import React, { type CSSProperties } from "react";
+import { type CSSProperties } from "react";
 
 import { Badge } from "../ui/badge";
 import { Button, ButtonVariant } from "../ui/button";
@@ -9,7 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card";
-import { Progress } from "../ui/progress";
 import { Select } from "../ui/select";
 import type { SpeedObject } from "../../data/speedObjects";
 import type { TrackVisualState } from "../../store/simulationSelectors";
@@ -77,7 +76,7 @@ export const Track = ({
           <span>0 m</span>
           <span>{formatMeters(track.trackLengthMeters)}</span>
         </div>
-        <div className="track-card__lane" aria-label={`${track.objectName} lane`}>
+        <div className="track-card__lane" aria-label={`${track.objectName} lane`} data-progress={track.progressRatio}>
           <div className="track-card__start" aria-hidden="true" />
           <div
             className="track-card__runner"
@@ -91,14 +90,6 @@ export const Track = ({
           </div>
           <div className="track-card__finish" aria-hidden="true" />
         </div>
-
-        <Progress
-          value={track.progressPercent}
-          aria-label={`${track.objectName} progress`}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={track.progressPercent}
-        />
 
         <dl className="track-card__metrics">
           <div>
