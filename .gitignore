@@ -4,3 +4,5 @@ dist-e2e/
 test-results/
 .vite/
 *.local
+.worktrees/
+.superpowers/
