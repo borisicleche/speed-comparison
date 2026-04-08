@@ -44,6 +44,10 @@ export const createSimulationStore = (
   const engine = dependencies.engine ?? new SimulationEngine();
   const timeController = dependencies.timeController ?? createDefaultTimeController(engine);
 
+  // Tracks how many tracks have crossed the finish line in the current run.
+  // Reset on resetSimulation and setDistance so the next run detects finishes correctly.
+  // Note: not reset on removeTrack — removing finished tracks mid-simulation will
+  // leave the counter stale until the simulation is reset or distance is changed.
   let prevFinishedCount = 0;
   let unsubscribeEngine = () => {};
 
@@ -99,6 +103,7 @@ export const createSimulationStore = (
       const currentDistanceMeters = get().simulationState.distance.value;
       get().dispatch({ type: SimulationActionType.SET_DISTANCE, value, unit });
 
+      // Reset even when distance is unchanged so the next run detects finishes correctly.
       prevFinishedCount = 0;
 
       if (!hasDistanceChanged(currentDistanceMeters, nextDistanceMeters)) {
