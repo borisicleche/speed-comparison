@@ -5,180 +5,177 @@ import { DistanceUnit } from "../utils/unitConversion";
 import { selectTrackVisualStates } from "./simulationSelectors";
 import { createSimulationStore } from "./simulationStore";
 
-test("setPauseOnFinish updates simulationState flag", () => {
-  const store = createSimulationStore({
-    timeController: { start: () => {}, stop: () => {} },
-  });
-
-  expect(store.getState().simulationState.pauseOnFinish).toBe(false);
-
-  store.getState().setPauseOnFinish(true);
-  expect(store.getState().simulationState.pauseOnFinish).toBe(true);
-
-  store.getState().setPauseOnFinish(false);
-  expect(store.getState().simulationState.pauseOnFinish).toBe(false);
-});
-
-test("pause-on-finish auto-pauses when first track crosses finish line", () => {
-  const engine = new SimulationEngine();
-  const controllerCalls = { start: 0, stop: 0 };
-
-  const store = createSimulationStore({
-    engine,
-    timeController: {
-      start: () => { controllerCalls.start += 1; },
-      stop: () => { controllerCalls.stop += 1; },
-    },
-  });
-
-  store.getState().setPauseOnFinish(true);
-  store.getState().startSimulation();
-  engine.advanceTo(0);
-  engine.advanceTo(73001); // car finishes at ~72 s
-
-  expect(store.getState().simulationState.engine.isRunning).toBe(false);
-  expect(controllerCalls.stop).toBeGreaterThanOrEqual(1);
-});
-
-test("pause-on-finish auto-pauses again when second track finishes after resume", () => {
-  const engine = new SimulationEngine();
-  const controllerCalls = { stop: 0 };
-
-  const store = createSimulationStore({
-    engine,
-    timeController: {
-      start: () => {},
-      stop: () => { controllerCalls.stop += 1; },
-    },
-  });
-
-  store.getState().setPauseOnFinish(true);
-  store.getState().startSimulation();
-  engine.advanceTo(0);
-  engine.advanceTo(73001); // first pause: car finishes
-
-  const stopCountAfterFirst = controllerCalls.stop;
-
-  // Resume
-  store.getState().startSimulation();
-  engine.advanceTo(73001); // re-establish baseline after resume
-  engine.advanceTo(720001); // second pause: walking finishes
-
-  expect(store.getState().simulationState.engine.isRunning).toBe(false);
-  expect(controllerCalls.stop).toBeGreaterThan(stopCountAfterFirst);
-});
-
-test("pause-on-finish does not trigger on subsequent frames once track is already finished", () => {
-  const engine = new SimulationEngine();
-  const controllerCalls = { stop: 0 };
-
-  const store = createSimulationStore({
-    engine,
-    timeController: {
-      start: () => {},
-      stop: () => { controllerCalls.stop += 1; },
-    },
-  });
-
-  store.getState().setPauseOnFinish(true);
-  store.getState().startSimulation();
-  engine.advanceTo(0);
-  engine.advanceTo(73001); // car finishes → pause
-
-  const stopAfterFirstFinish = controllerCalls.stop;
-
-  // If the engine were still running (it's not), advancing further should not add more stops.
-  // Verify prevFinishedCount was updated so a re-trigger won't fire on resume+advance-past-same-point.
-  store.getState().startSimulation();
-  engine.advanceTo(73001);
-  engine.advanceTo(74000); // still only car finished, walking has not yet
-
-  // Should still be running (only car done, walking still in progress)
-  expect(store.getState().simulationState.engine.isRunning).toBe(true);
-  expect(controllerCalls.stop).toBe(stopAfterFirstFinish);
-});
-
-test("prevFinishedCount resets on resetSimulation so next run detects finishes correctly", () => {
-  const engine = new SimulationEngine();
-  const controllerCalls = { stop: 0 };
-
-  const store = createSimulationStore({
-    engine,
-    timeController: {
-      start: () => {},
-      stop: () => { controllerCalls.stop += 1; },
-    },
-  });
-
-  store.getState().setPauseOnFinish(true);
-
-  // First run: advance until car finishes
-  store.getState().startSimulation();
-  engine.advanceTo(0);
-  engine.advanceTo(73001);
-  expect(store.getState().simulationState.engine.isRunning).toBe(false);
-
-  // Reset, then second run
-  store.getState().resetSimulation();
-  store.getState().startSimulation();
-  engine.advanceTo(0);
-  engine.advanceTo(73001); // car finishes again in fresh run
-
-  expect(store.getState().simulationState.engine.isRunning).toBe(false);
-});
-
-test("prevFinishedCount resets on setDistance so next run detects finishes correctly", () => {
-  const engine = new SimulationEngine();
-  const controllerCalls = { stop: 0 };
-
-  const store = createSimulationStore({
-    engine,
-    timeController: {
-      start: () => {},
-      stop: () => { controllerCalls.stop += 1; },
-    },
-  });
-
-  store.getState().setPauseOnFinish(true);
-
-  // First run: advance until car finishes
-  store.getState().startSimulation();
-  engine.advanceTo(0);
-  engine.advanceTo(73001);
-
-  // Change distance (resets engine + prevFinishedCount)
-  store.getState().setDistance(1, DistanceUnit.KILOMETERS);
-
-  // Second run
-  store.getState().startSimulation();
-  engine.advanceTo(0);
-  engine.advanceTo(73001); // car finishes again
-
-  expect(store.getState().simulationState.engine.isRunning).toBe(false);
-});
-
-test("pause-on-finish does nothing when disabled", () => {
-  const engine = new SimulationEngine();
-  const controllerCalls = { stop: 0 };
-
-  const store = createSimulationStore({
-    engine,
-    timeController: {
-      start: () => {},
-      stop: () => { controllerCalls.stop += 1; },
-    },
-  });
-
-  // pauseOnFinish is false by default
-  store.getState().startSimulation();
-  engine.advanceTo(0);
-  engine.advanceTo(73001); // car finishes
-
-  // Should still be running (walking hasn't finished)
-  expect(store.getState().simulationState.engine.isRunning).toBe(true);
-});
-
 describe("simulationStore (zustand)", () => {
+  test("setPauseOnFinish updates simulationState flag", () => {
+    const store = createSimulationStore({
+      timeController: { start: () => {}, stop: () => {} },
+    });
+
+    expect(store.getState().simulationState.pauseOnFinish).toBe(false);
+
+    store.getState().setPauseOnFinish(true);
+    expect(store.getState().simulationState.pauseOnFinish).toBe(true);
+
+    store.getState().setPauseOnFinish(false);
+    expect(store.getState().simulationState.pauseOnFinish).toBe(false);
+  });
+
+  test("pause-on-finish auto-pauses when first track crosses finish line", () => {
+    const engine = new SimulationEngine();
+    const controllerCalls = { start: 0, stop: 0 };
+
+    const store = createSimulationStore({
+      engine,
+      timeController: {
+        start: () => { controllerCalls.start += 1; },
+        stop: () => { controllerCalls.stop += 1; },
+      },
+    });
+
+    store.getState().setPauseOnFinish(true);
+    store.getState().startSimulation();
+    engine.advanceTo(0);
+    engine.advanceTo(73001); // car finishes at ~72 s
+
+    expect(store.getState().simulationState.engine.isRunning).toBe(false);
+    expect(controllerCalls.stop).toBeGreaterThanOrEqual(1);
+  });
+
+  test("pause-on-finish auto-pauses again when second track finishes after resume", () => {
+    const engine = new SimulationEngine();
+    const controllerCalls = { stop: 0 };
+
+    const store = createSimulationStore({
+      engine,
+      timeController: {
+        start: () => {},
+        stop: () => { controllerCalls.stop += 1; },
+      },
+    });
+
+    store.getState().setPauseOnFinish(true);
+    store.getState().startSimulation();
+    engine.advanceTo(0);
+    engine.advanceTo(73001); // first pause: car finishes
+
+    const stopCountAfterFirst = controllerCalls.stop;
+
+    // Resume
+    store.getState().startSimulation();
+    engine.advanceTo(73001); // re-establish baseline after resume
+    engine.advanceTo(720001); // second pause: walking finishes
+
+    expect(store.getState().simulationState.engine.isRunning).toBe(false);
+    expect(controllerCalls.stop).toBeGreaterThan(stopCountAfterFirst);
+  });
+
+  test("pause-on-finish does not trigger on subsequent frames once track is already finished", () => {
+    const engine = new SimulationEngine();
+    const controllerCalls = { stop: 0 };
+
+    const store = createSimulationStore({
+      engine,
+      timeController: {
+        start: () => {},
+        stop: () => { controllerCalls.stop += 1; },
+      },
+    });
+
+    store.getState().setPauseOnFinish(true);
+    store.getState().startSimulation();
+    engine.advanceTo(0);
+    engine.advanceTo(73001); // car finishes → pause
+
+    const stopAfterFirstFinish = controllerCalls.stop;
+
+    // If the engine were still running (it's not), advancing further should not add more stops.
+    // Verify prevFinishedCount was updated so a re-trigger won't fire on resume+advance-past-same-point.
+    store.getState().startSimulation();
+    engine.advanceTo(73001);
+    engine.advanceTo(74000); // still only car finished, walking has not yet
+
+    // Should still be running (only car done, walking still in progress)
+    expect(store.getState().simulationState.engine.isRunning).toBe(true);
+    expect(controllerCalls.stop).toBe(stopAfterFirstFinish);
+  });
+
+  test("prevFinishedCount resets on resetSimulation so next run detects finishes correctly", () => {
+    const engine = new SimulationEngine();
+
+    const store = createSimulationStore({
+      engine,
+      timeController: {
+        start: () => {},
+        stop: () => {},
+      },
+    });
+
+    store.getState().setPauseOnFinish(true);
+
+    // First run: advance until car finishes
+    store.getState().startSimulation();
+    engine.advanceTo(0);
+    engine.advanceTo(73001);
+    expect(store.getState().simulationState.engine.isRunning).toBe(false);
+
+    // Reset, then second run
+    store.getState().resetSimulation();
+    store.getState().startSimulation();
+    engine.advanceTo(0);
+    engine.advanceTo(73001); // car finishes again in fresh run
+
+    expect(store.getState().simulationState.engine.isRunning).toBe(false);
+  });
+
+  test("prevFinishedCount resets on setDistance so next run detects finishes correctly", () => {
+    const engine = new SimulationEngine();
+
+    const store = createSimulationStore({
+      engine,
+      timeController: {
+        start: () => {},
+        stop: () => {},
+      },
+    });
+
+    store.getState().setPauseOnFinish(true);
+
+    // First run: advance until car finishes
+    store.getState().startSimulation();
+    engine.advanceTo(0);
+    engine.advanceTo(73001);
+
+    // Change distance (resets engine + prevFinishedCount)
+    store.getState().setDistance(1, DistanceUnit.KILOMETERS);
+
+    // Second run
+    store.getState().startSimulation();
+    engine.advanceTo(0);
+    engine.advanceTo(73001); // car finishes again
+
+    expect(store.getState().simulationState.engine.isRunning).toBe(false);
+  });
+
+  test("pause-on-finish does nothing when disabled", () => {
+    const engine = new SimulationEngine();
+    const controllerCalls = { stop: 0 };
+
+    const store = createSimulationStore({
+      engine,
+      timeController: {
+        start: () => {},
+        stop: () => { controllerCalls.stop += 1; },
+      },
+    });
+
+    // pauseOnFinish is false by default
+    store.getState().startSimulation();
+    engine.advanceTo(0);
+    engine.advanceTo(73001); // car finishes
+
+    // Should still be running (walking hasn't finished)
+    expect(store.getState().simulationState.engine.isRunning).toBe(true);
+  });
   test("start/pause/reset synchronize shared engine snapshot", () => {
     const engine = new SimulationEngine();
     const controllerCalls = { start: 0, stop: 0 };

@@ -14,7 +14,7 @@ export const SimulationOptions = () => {
 
   return (
     <section className="simulation-options" aria-label="Simulation options">
-      <h2 className="simulation-options__title">Options</h2>
+      <p className="simulation-options__title">Options</p>
       <div className="simulation-options__item">
         {/* TODO: replace with ui/Checkbox primitive once available */}
         <input
