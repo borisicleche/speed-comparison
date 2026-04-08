@@ -14,7 +14,7 @@
   align-items: center;
   display: grid;
   gap: 0.45rem;
-  grid-template-columns: minmax(0, 5rem) minmax(0, 1fr);
+  grid-template-columns: auto minmax(0, 1fr);
   margin-bottom: 0.55rem;
 
   label {
@@ -134,6 +134,90 @@
   font-weight: 600;
   justify-content: space-between;
   margin-bottom: 0.2rem;
+}
+
+.track-card__distance-override {
+  margin-bottom: 0.55rem;
+
+  label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+}
+
+.track-card__distance-display {
+  align-items: center;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.track-card__distance-value {
+  color: v.$color-text;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.track-card__distance-edit-btn,
+.track-card__distance-done {
+  background: none;
+  border: 1px solid rgba(v.$color-line, 0.6);
+  border-radius: 0.35rem;
+  color: v.$color-accent-cool;
+  cursor: pointer;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 0.15rem 0.5rem;
+
+  &:disabled {
+    color: v.$color-text-muted;
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+}
+
+.track-card__distance-edit {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  gap: 0.35rem;
+
+  .ui-input {
+    width: 6rem;
+    min-width: 0;
+  }
+
+  .ui-select {
+    width: auto;
+  }
+}
+
+.track-card__use-global {
+  background: none;
+  border: none;
+  color: v.$color-accent-cool;
+  cursor: pointer;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+
+  &:disabled {
+    color: v.$color-text-muted;
+    cursor: not-allowed;
+    text-decoration: none;
+  }
+}
+
+.track-card__global-badge {
+  color: v.$color-text-muted;
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 @media (max-width: v.$tablet-breakpoint) {
