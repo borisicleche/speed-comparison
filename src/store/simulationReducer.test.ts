@@ -45,7 +45,7 @@ describe("simulationReducer", () => {
       objectId: "train",
     });
 
-    expect(withAddedTrack.tracks[2]).toEqual({ id: "track-3", objectId: "train" });
+    expect(withAddedTrack.tracks[2]).toEqual({ id: "track-3", objectId: "train", distanceOverride: null });
 
     const withRemovedTrack = simulationReducer(withAddedTrack, {
       type: SimulationActionType.REMOVE_TRACK,
@@ -81,6 +81,7 @@ describe("simulationReducer", () => {
     expect(fallbackTrackState.tracks[2]).toEqual({
       id: "track-3",
       objectId: "human-walking",
+      distanceOverride: null,
     });
 
     const maxedState = {
@@ -154,5 +155,102 @@ describe("simulationReducer", () => {
       enabled: false,
     });
     expect(disabled.pauseOnFinish).toBe(false);
+  });
+
+  test("SET_TRACK_DISTANCE stores override on a track", () => {
+    const state = createInitialSimulationState();
+
+    const next = simulationReducer(state, {
+      type: SimulationActionType.SET_TRACK_DISTANCE,
+      trackId: "track-1",
+      amount: 500,
+      unit: DistanceUnit.METERS,
+    });
+
+    expect(next.tracks[0].distanceOverride).toEqual({
+      amount: 500,
+      unit: DistanceUnit.METERS,
+      value: 500,
+    });
+    expect(next.tracks[1].distanceOverride).toBeNull();
+  });
+
+  test("SET_TRACK_DISTANCE for unknown trackId is a no-op", () => {
+    const state = createInitialSimulationState();
+
+    const next = simulationReducer(state, {
+      type: SimulationActionType.SET_TRACK_DISTANCE,
+      trackId: "track-99",
+      amount: 500,
+      unit: DistanceUnit.METERS,
+    });
+
+    expect(next).toBe(state);
+  });
+
+  test("CLEAR_TRACK_DISTANCE nulls the override", () => {
+    const state = createInitialSimulationState();
+
+    const withOverride = simulationReducer(state, {
+      type: SimulationActionType.SET_TRACK_DISTANCE,
+      trackId: "track-1",
+      amount: 500,
+      unit: DistanceUnit.METERS,
+    });
+
+    const cleared = simulationReducer(withOverride, {
+      type: SimulationActionType.CLEAR_TRACK_DISTANCE,
+      trackId: "track-1",
+    });
+
+    expect(cleared.tracks[0].distanceOverride).toBeNull();
+  });
+
+  test("ADD_TRACK with distanceOverride stores it on the new track", () => {
+    const state = createInitialSimulationState();
+
+    const next = simulationReducer(state, {
+      type: SimulationActionType.ADD_TRACK,
+      objectId: "train",
+      distanceOverride: { amount: 2, unit: DistanceUnit.KILOMETERS, value: 2000 },
+    });
+
+    expect(next.tracks[2].distanceOverride).toEqual({
+      amount: 2,
+      unit: DistanceUnit.KILOMETERS,
+      value: 2000,
+    });
+  });
+
+  test("CLEAR_TRACK_DISTANCE on a track with no override is a no-op", () => {
+    const state = createInitialSimulationState();
+    const next = simulationReducer(state, {
+      type: SimulationActionType.CLEAR_TRACK_DISTANCE,
+      trackId: "track-1",
+    });
+    expect(next).toBe(state);
+  });
+
+  test("SET_DISTANCE does not affect per-track overrides", () => {
+    const state = createInitialSimulationState();
+
+    const withOverride = simulationReducer(state, {
+      type: SimulationActionType.SET_TRACK_DISTANCE,
+      trackId: "track-1",
+      amount: 500,
+      unit: DistanceUnit.METERS,
+    });
+
+    const afterGlobal = simulationReducer(withOverride, {
+      type: SimulationActionType.SET_DISTANCE,
+      value: 2,
+      unit: DistanceUnit.KILOMETERS,
+    });
+
+    expect(afterGlobal.tracks[0].distanceOverride).toEqual({
+      amount: 500,
+      unit: DistanceUnit.METERS,
+      value: 500,
+    });
   });
 });

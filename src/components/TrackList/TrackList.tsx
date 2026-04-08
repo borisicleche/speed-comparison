@@ -1,24 +1,26 @@
 import React from "react";
 
-import type { SpeedObject } from "../../data/speedObjects";
 import type { TrackVisualState } from "../../store/simulationSelectors";
+import { DistanceUnit } from "../../utils/unitConversion";
 import { Track } from "../Track/Track";
 import "./TrackList.scss";
 
 type TrackListProps = {
   tracks: TrackVisualState[];
-  speedObjects: ReadonlyArray<SpeedObject>;
   canRemoveTrack: boolean;
-  onTrackObjectChange: (trackId: string, objectId: string) => void;
+  isRunning: boolean;
   onRemoveTrack: (trackId: string) => void;
+  onSetTrackDistance: (trackId: string, amount: number, unit: DistanceUnit) => void;
+  onClearTrackDistance: (trackId: string) => void;
 };
 
 export const TrackList = ({
   tracks,
-  speedObjects,
   canRemoveTrack,
-  onTrackObjectChange,
+  isRunning,
   onRemoveTrack,
+  onSetTrackDistance,
+  onClearTrackDistance,
 }: TrackListProps) => {
   if (tracks.length === 0) {
     return (
@@ -34,10 +36,11 @@ export const TrackList = ({
         <Track
           key={track.trackId}
           track={track}
-          speedObjects={speedObjects}
           canRemoveTrack={canRemoveTrack}
-          onTrackObjectChange={onTrackObjectChange}
+          isRunning={isRunning}
           onRemoveTrack={onRemoveTrack}
+          onSetTrackDistance={onSetTrackDistance}
+          onClearTrackDistance={onClearTrackDistance}
         />
       ))}
     </section>

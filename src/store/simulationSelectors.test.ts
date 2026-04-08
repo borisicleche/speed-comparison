@@ -12,7 +12,7 @@ import {
   selectTrackVisualState,
   selectTrackVisualStates,
 } from "./simulationSelectors";
-import { SpeedLengthUnit, SpeedTimeUnit } from "../utils/unitConversion";
+import { DistanceUnit, SpeedLengthUnit, SpeedTimeUnit } from "../utils/unitConversion";
 
 describe("simulationSelectors", () => {
   test("selectTrackById returns lane by id", () => {
@@ -72,7 +72,7 @@ describe("simulationSelectors", () => {
 
     const invalidObjectState: SimulationState = {
       ...initialState,
-      tracks: [{ id: "track-1", objectId: "does-not-exist" }],
+      tracks: [{ id: "track-1", objectId: "does-not-exist", distanceOverride: null }],
     };
 
     expect(selectTrackDerivedState(initialState, "missing")).toBeUndefined();
@@ -180,5 +180,75 @@ describe("simulationSelectors", () => {
     expect(visualTracks[0].progressPercent).toBeCloseTo(((5 / 3.6) * 6 * 100) / 1000, 12);
     expect(visualTracks[1].progressPercent).toBeCloseTo(((50 / 3.6) * 6 * 100) / 1000, 12);
     expect(visualTracks[1].progressPercent).toBeGreaterThan(visualTracks[0].progressPercent);
+  });
+
+  // NEW tests — add at the end of the describe block:
+  test("effectiveTrackLengthMeters uses distanceOverride.value when set", () => {
+    const state = createInitialSimulationState();
+
+    const withOverride = simulationReducer(state, {
+      type: SimulationActionType.SET_TRACK_DISTANCE,
+      trackId: "track-1",
+      amount: 500,
+      unit: DistanceUnit.METERS,
+    });
+
+    const visual = selectTrackVisualState(withOverride, "track-1");
+
+    expect(visual?.effectiveTrackLengthMeters).toBe(500);
+  });
+
+  test("effectiveTrackLengthMeters falls back to global when distanceOverride is null", () => {
+    const state = createInitialSimulationState(); // global 1000 m
+
+    const visual = selectTrackVisualState(state, "track-1");
+
+    expect(visual?.effectiveTrackLengthMeters).toBe(1000);
+  });
+
+  test("isFinished uses effectiveTrackLengthMeters not global", () => {
+    // airplane: 900 km/h = 250 m/s. Override to 250 m → finishes at 1 s.
+    // Global is 1000 m so without override it would NOT be finished at 2 s.
+    const state = createInitialSimulationState();
+    const withAirplane = simulationReducer(state, {
+      type: SimulationActionType.ADD_TRACK,
+      objectId: "airplane",
+    });
+    const withOverride = simulationReducer(withAirplane, {
+      type: SimulationActionType.SET_TRACK_DISTANCE,
+      trackId: "track-3",
+      amount: 250,
+      unit: DistanceUnit.METERS,
+    });
+    const synced = simulationReducer(withOverride, {
+      type: SimulationActionType.ENGINE_SYNC,
+      snapshot: { elapsedTimeSeconds: 2, isRunning: true, trackLengthMeters: 1000 },
+    });
+
+    const visual = selectTrackVisualState(synced, "track-3");
+
+    expect(visual?.isFinished).toBe(true);
+    expect(visual?.clampedDistanceMeters).toBe(250);
+    expect(visual?.remainingDistanceMeters).toBe(0);
+  });
+
+  test("distanceOverride is exposed on TrackVisualState", () => {
+    const state = createInitialSimulationState();
+
+    const withOverride = simulationReducer(state, {
+      type: SimulationActionType.SET_TRACK_DISTANCE,
+      trackId: "track-1",
+      amount: 2,
+      unit: DistanceUnit.KILOMETERS,
+    });
+
+    const visual = selectTrackVisualState(withOverride, "track-1");
+
+    expect(visual?.distanceOverride).toEqual({
+      amount: 2,
+      unit: DistanceUnit.KILOMETERS,
+      value: 2000,
+    });
+    expect(selectTrackVisualState(state, "track-2")?.distanceOverride).toBeNull();
   });
 });

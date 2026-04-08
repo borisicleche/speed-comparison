@@ -304,6 +304,7 @@ describe("simulationStore (zustand)", () => {
     expect(store.getState().simulationState.tracks[2]).toEqual({
       id: "track-3",
       objectId: "train",
+      distanceOverride: null,
     });
 
     store.getState().setTrackObject("track-1", "cheetah");
@@ -314,6 +315,54 @@ describe("simulationStore (zustand)", () => {
       "track-1",
       "track-3",
     ]);
+  });
+
+  test("setTrackDistance stores override and ignores invalid values", () => {
+    const store = createSimulationStore({
+      timeController: { start: () => {}, stop: () => {} },
+    });
+
+    store.getState().setTrackDistance("track-1", 500, DistanceUnit.METERS);
+    expect(store.getState().simulationState.tracks[0].distanceOverride).toEqual({
+      amount: 500,
+      unit: DistanceUnit.METERS,
+      value: 500,
+    });
+
+    // Invalid values are no-ops
+    const before = store.getState().simulationState;
+    store.getState().setTrackDistance("track-1", 0, DistanceUnit.METERS);
+    store.getState().setTrackDistance("track-1", -1, DistanceUnit.METERS);
+    store.getState().setTrackDistance("track-1", Number.NaN, DistanceUnit.METERS);
+    expect(store.getState().simulationState).toBe(before);
+  });
+
+  test("clearTrackDistance removes the override", () => {
+    const store = createSimulationStore({
+      timeController: { start: () => {}, stop: () => {} },
+    });
+
+    store.getState().setTrackDistance("track-1", 500, DistanceUnit.METERS);
+    store.getState().clearTrackDistance("track-1");
+    expect(store.getState().simulationState.tracks[0].distanceOverride).toBeNull();
+  });
+
+  test("addTrack with distanceOverride passes it to the reducer", () => {
+    const store = createSimulationStore({
+      timeController: { start: () => {}, stop: () => {} },
+    });
+
+    store.getState().addTrack("train", {
+      amount: 2,
+      unit: DistanceUnit.KILOMETERS,
+      value: 2000,
+    });
+
+    expect(store.getState().simulationState.tracks[2].distanceOverride).toEqual({
+      amount: 2,
+      unit: DistanceUnit.KILOMETERS,
+      value: 2000,
+    });
   });
 
   test("invalid control transitions do not trigger engine/time controller side effects", () => {
