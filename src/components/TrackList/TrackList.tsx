@@ -12,6 +12,7 @@ type TrackListProps = {
   onRemoveTrack: (trackId: string) => void;
   onSetTrackDistance: (trackId: string, amount: number, unit: DistanceUnit) => void;
   onClearTrackDistance: (trackId: string) => void;
+  onSetTrackObject: (trackId: string, objectId: string) => void;
 };
 
 export const TrackList = ({
@@ -21,6 +22,7 @@ export const TrackList = ({
   onRemoveTrack,
   onSetTrackDistance,
   onClearTrackDistance,
+  onSetTrackObject,
 }: TrackListProps) => {
   if (tracks.length === 0) {
     return (
@@ -41,6 +43,7 @@ export const TrackList = ({
           onRemoveTrack={onRemoveTrack}
           onSetTrackDistance={onSetTrackDistance}
           onClearTrackDistance={onClearTrackDistance}
+          onSetTrackObject={onSetTrackObject}
         />
       ))}
     </section>

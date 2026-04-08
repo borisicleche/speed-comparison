@@ -22,6 +22,7 @@ export const App = () => {
   const removeTrack = useSimulationStore((state) => state.removeTrack);
   const setTrackDistance = useSimulationStore((state) => state.setTrackDistance);
   const clearTrackDistance = useSimulationStore((state) => state.clearTrackDistance);
+  const setTrackObject = useSimulationStore((state) => state.setTrackObject);
 
   return (
     <main className="app-shell">
@@ -35,6 +36,7 @@ export const App = () => {
           onRemoveTrack={removeTrack}
           onSetTrackDistance={setTrackDistance}
           onClearTrackDistance={clearTrackDistance}
+          onSetTrackObject={setTrackObject}
         />
       </div>
     </main>

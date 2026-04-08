@@ -12,6 +12,7 @@ import {
 } from "../ui/card";
 import { Input } from "../ui/input";
 import { Select } from "../ui/select";
+import { SPEED_OBJECTS } from "../../data/speedObjects";
 import type { TrackVisualState } from "../../store/simulationSelectors";
 import {
   DistanceUnit,
@@ -28,6 +29,7 @@ type TrackProps = {
   onRemoveTrack: (trackId: string) => void;
   onSetTrackDistance: (trackId: string, amount: number, unit: DistanceUnit) => void;
   onClearTrackDistance: (trackId: string) => void;
+  onSetTrackObject: (trackId: string, objectId: string) => void;
 };
 
 export const Track = ({
@@ -37,6 +39,7 @@ export const Track = ({
   onRemoveTrack,
   onSetTrackDistance,
   onClearTrackDistance,
+  onSetTrackObject,
 }: TrackProps) => {
   const runnerStyle = {
     "--progress-ratio": String(track.progressRatio),
@@ -97,6 +100,19 @@ export const Track = ({
         <div>
           <CardTitle>{track.objectName}</CardTitle>
           <CardDescription>{formatSpeed(track)}</CardDescription>
+          <Select
+            value={track.objectId}
+            disabled={isRunning}
+            onChange={(e) => onSetTrackObject(track.trackId, e.target.value)}
+            data-testid={`track-object-select-${track.trackId}`}
+            aria-label={`Object for ${track.trackId}`}
+          >
+            {SPEED_OBJECTS.map((obj) => (
+              <option key={obj.id} value={obj.id}>
+                {obj.name}
+              </option>
+            ))}
+          </Select>
         </div>
         <div className="track-card__header-right">
           {track.isFinished ? <Badge>Finished</Badge> : null}
