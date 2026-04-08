@@ -40,7 +40,7 @@ export const SimulationControls = () => {
           disabled={!controlsState.canStart}
           aria-disabled={!controlsState.canStart}
         >
-          Start
+          {elapsedTimeSeconds > 0 && !isRunning ? "Resume" : "Start"}
         </Button>
         <Button
           variant={ButtonVariant.SECONDARY}
