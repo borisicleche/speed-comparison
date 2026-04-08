@@ -9,15 +9,19 @@ export const SimulationOptions = () => {
   );
   const setPauseOnFinish = useSimulationStore((state) => state.setPauseOnFinish);
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
+    setPauseOnFinish(e.target.checked);
+
   return (
     <section className="simulation-options" aria-label="Simulation options">
-      <p className="simulation-options__title">Options</p>
+      <h2 className="simulation-options__title">Options</h2>
       <div className="simulation-options__item">
+        {/* TODO: replace with ui/Checkbox primitive once available */}
         <input
           id="pause-on-finish"
           type="checkbox"
           checked={pauseOnFinish}
-          onChange={(e) => setPauseOnFinish(e.target.checked)}
+          onChange={handleChange}
         />
         <label className="simulation-options__label" htmlFor="pause-on-finish">
           Pause when each track finishes
