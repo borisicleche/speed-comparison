@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 
 import { DistanceInput } from "../components/DistanceInput/DistanceInput";
 import { SimulationControls } from "../components/SimulationControls/SimulationControls";
+import { SimulationOptions } from "../components/SimulationOptions/SimulationOptions";
 import { TrackList } from "../components/TrackList/TrackList";
 import { TrackManagement } from "../components/TrackManagement/TrackManagement";
 import { SPEED_OBJECTS } from "../data/speedObjects";
@@ -37,6 +38,7 @@ export const App = () => {
         </header>
 
         <SimulationControls />
+        <SimulationOptions />
         <DistanceInput />
         <TrackManagement
           trackCount={trackCount}
