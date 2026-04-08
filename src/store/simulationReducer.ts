@@ -31,6 +31,7 @@ export type SimulationState = {
   distance: DistanceState;
   engine: SimulationEngineState;
   maxTracks: number;
+  pauseOnFinish: boolean;
 };
 
 export enum SimulationActionType {
@@ -39,6 +40,7 @@ export enum SimulationActionType {
   ADD_TRACK = "ADD_TRACK",
   REMOVE_TRACK = "REMOVE_TRACK",
   SET_TRACK_OBJECT = "SET_TRACK_OBJECT",
+  SET_PAUSE_ON_FINISH = "SET_PAUSE_ON_FINISH",
 }
 
 export type SimulationAction =
@@ -46,7 +48,8 @@ export type SimulationAction =
   | { type: SimulationActionType.SET_DISTANCE; value: number; unit: DistanceUnit }
   | { type: SimulationActionType.ADD_TRACK; objectId?: string }
   | { type: SimulationActionType.REMOVE_TRACK; trackId: string }
-  | { type: SimulationActionType.SET_TRACK_OBJECT; trackId: string; objectId: string };
+  | { type: SimulationActionType.SET_TRACK_OBJECT; trackId: string; objectId: string }
+  | { type: SimulationActionType.SET_PAUSE_ON_FINISH; enabled: boolean };
 
 export const createInitialSimulationState = (): SimulationState => {
   return {
@@ -64,6 +67,7 @@ export const createInitialSimulationState = (): SimulationState => {
       isRunning: false,
     },
     maxTracks: DEFAULT_MAX_TRACKS,
+    pauseOnFinish: false,
   };
 };
 
@@ -159,6 +163,12 @@ export const simulationReducer = (
       return {
         ...state,
         tracks: nextTracks,
+      };
+    }
+    case SimulationActionType.SET_PAUSE_ON_FINISH: {
+      return {
+        ...state,
+        pauseOnFinish: action.enabled,
       };
     }
     default: {

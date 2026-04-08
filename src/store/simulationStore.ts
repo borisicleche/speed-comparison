@@ -30,6 +30,7 @@ export type SimulationStoreState = {
   addTrack: (objectId?: string) => void;
   removeTrack: (trackId: string) => void;
   setTrackObject: (trackId: string, objectId: string) => void;
+  setPauseOnFinish: (enabled: boolean) => void;
   destroyStore: () => void;
 };
 
@@ -43,6 +44,11 @@ export const createSimulationStore = (
   const engine = dependencies.engine ?? new SimulationEngine();
   const timeController = dependencies.timeController ?? createDefaultTimeController(engine);
 
+  // Tracks how many tracks have crossed the finish line in the current run.
+  // Reset on resetSimulation and setDistance so the next run detects finishes correctly.
+  // Note: not reset on removeTrack — removing finished tracks mid-simulation will
+  // leave the counter stale until the simulation is reset or distance is changed.
+  let prevFinishedCount = 0;
   let unsubscribeEngine = () => {};
 
   const store = createStore<SimulationStoreState>((set, get) => ({
@@ -79,6 +85,7 @@ export const createSimulationStore = (
         return;
       }
 
+      prevFinishedCount = 0;
       engine.reset();
       timeController.stop();
     },
@@ -96,6 +103,9 @@ export const createSimulationStore = (
       const currentDistanceMeters = get().simulationState.distance.value;
       get().dispatch({ type: SimulationActionType.SET_DISTANCE, value, unit });
 
+      // Reset even when distance is unchanged so the next run detects finishes correctly.
+      prevFinishedCount = 0;
+
       if (!hasDistanceChanged(currentDistanceMeters, nextDistanceMeters)) {
         return;
       }
@@ -112,6 +122,9 @@ export const createSimulationStore = (
     setTrackObject: (trackId, objectId) => {
       get().dispatch({ type: SimulationActionType.SET_TRACK_OBJECT, trackId, objectId });
     },
+    setPauseOnFinish: (enabled) => {
+      get().dispatch({ type: SimulationActionType.SET_PAUSE_ON_FINISH, enabled });
+    },
     destroyStore: () => {
       unsubscribeEngine();
       timeController.stop();
@@ -126,9 +139,28 @@ export const createSimulationStore = (
       snapshot,
     });
 
-    if (snapshot.isRunning) {
-      const tracks = selectTrackVisualStates(store.getState().simulationState);
-      if (tracks.length > 0 && tracks.every((t) => t.isFinished)) {
+    if (!snapshot.isRunning) {
+      return;
+    }
+
+    const tracks = selectTrackVisualStates(store.getState().simulationState);
+
+    if (tracks.length === 0) {
+      return;
+    }
+
+    // Auto-stop when all tracks finish (existing behaviour)
+    if (tracks.every((t) => t.isFinished)) {
+      engine.pause();
+      timeController.stop();
+      return;
+    }
+
+    // Pause-on-finish: pause whenever a new track crosses the line
+    if (store.getState().simulationState.pauseOnFinish) {
+      const finishedCount = tracks.filter((t) => t.isFinished).length;
+      if (finishedCount > prevFinishedCount) {
+        prevFinishedCount = finishedCount;
         engine.pause();
         timeController.stop();
       }
