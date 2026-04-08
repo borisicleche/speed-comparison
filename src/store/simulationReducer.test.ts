@@ -134,4 +134,25 @@ describe("simulationReducer", () => {
     expect(nextState.distance.amount).toBe(0.5);
     expect(nextState.tracks).toEqual(state.tracks);
   });
+
+  test("initial state has pauseOnFinish disabled", () => {
+    const state = createInitialSimulationState();
+    expect(state.pauseOnFinish).toBe(false);
+  });
+
+  test("SET_PAUSE_ON_FINISH toggles the flag", () => {
+    const state = createInitialSimulationState();
+
+    const enabled = simulationReducer(state, {
+      type: SimulationActionType.SET_PAUSE_ON_FINISH,
+      enabled: true,
+    });
+    expect(enabled.pauseOnFinish).toBe(true);
+
+    const disabled = simulationReducer(enabled, {
+      type: SimulationActionType.SET_PAUSE_ON_FINISH,
+      enabled: false,
+    });
+    expect(disabled.pauseOnFinish).toBe(false);
+  });
 });
