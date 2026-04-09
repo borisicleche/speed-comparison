@@ -13,9 +13,7 @@ export const App = () => {
     () => selectTrackVisualStates(simulationState),
     [simulationState],
   );
-  const isRunning = useSimulationStore(
-    (state) => state.simulationState.engine.isRunning,
-  );
+  const isLocked = simulationState.engine.elapsedTimeSeconds > 0;
   const trackCount = useSimulationStore(
     (state) => state.simulationState.tracks.length,
   );
@@ -32,7 +30,7 @@ export const App = () => {
         <TrackList
           tracks={trackVisualStates}
           canRemoveTrack={trackCount > 1}
-          isRunning={isRunning}
+          isLocked={isLocked}
           onRemoveTrack={removeTrack}
           onSetTrackDistance={setTrackDistance}
           onClearTrackDistance={clearTrackDistance}

@@ -8,7 +8,7 @@ import "./TrackList.scss";
 type TrackListProps = {
   tracks: TrackVisualState[];
   canRemoveTrack: boolean;
-  isRunning: boolean;
+  isLocked: boolean;
   onRemoveTrack: (trackId: string) => void;
   onSetTrackDistance: (trackId: string, amount: number, unit: DistanceUnit) => void;
   onClearTrackDistance: (trackId: string) => void;
@@ -18,7 +18,7 @@ type TrackListProps = {
 export const TrackList = ({
   tracks,
   canRemoveTrack,
-  isRunning,
+  isLocked,
   onRemoveTrack,
   onSetTrackDistance,
   onClearTrackDistance,
@@ -39,7 +39,7 @@ export const TrackList = ({
           key={track.trackId}
           track={track}
           canRemoveTrack={canRemoveTrack}
-          isRunning={isRunning}
+          isLocked={isLocked}
           onRemoveTrack={onRemoveTrack}
           onSetTrackDistance={onSetTrackDistance}
           onClearTrackDistance={onClearTrackDistance}

@@ -25,7 +25,7 @@ import "./Track.scss";
 type TrackProps = {
   track: TrackVisualState;
   canRemoveTrack: boolean;
-  isRunning: boolean;
+  isLocked: boolean;
   onRemoveTrack: (trackId: string) => void;
   onSetTrackDistance: (trackId: string, amount: number, unit: DistanceUnit) => void;
   onClearTrackDistance: (trackId: string) => void;
@@ -35,7 +35,7 @@ type TrackProps = {
 export const Track = ({
   track,
   canRemoveTrack,
-  isRunning,
+  isLocked,
   onRemoveTrack,
   onSetTrackDistance,
   onClearTrackDistance,
@@ -102,7 +102,7 @@ export const Track = ({
           <CardDescription>{formatSpeed(track)}</CardDescription>
           <Select
             value={track.objectId}
-            disabled={isRunning}
+            disabled={isLocked}
             onChange={(e) => onSetTrackObject(track.trackId, e.target.value)}
             data-testid={`track-object-select-${track.trackId}`}
             aria-label={`Object for ${track.trackId}`}
@@ -141,7 +141,7 @@ export const Track = ({
                   onClearTrackDistance(track.trackId);
                   setIsEditingDistance(false);
                 }}
-                disabled={isRunning}
+                disabled={isLocked}
                 aria-label="Use global track length"
                 data-testid={`clear-distance-${track.trackId}`}
               >
@@ -160,7 +160,7 @@ export const Track = ({
                 min="0.001"
                 step="1"
                 value={draftAmount}
-                disabled={isRunning}
+                disabled={isLocked}
                 onChange={(e) => setDraftAmount(e.target.value)}
                 onBlur={handleDistanceBlur}
                 data-testid={`track-distance-amount-${track.trackId}`}
@@ -168,7 +168,7 @@ export const Track = ({
               />
               <Select
                 value={draftUnit}
-                disabled={isRunning}
+                disabled={isLocked}
                 onChange={(e) => {
                   const newUnit = e.target.value as DistanceUnit;
                   setDraftUnit(newUnit);
@@ -202,7 +202,7 @@ export const Track = ({
                 type="button"
                 className="track-card__distance-edit-btn"
                 onClick={() => setIsEditingDistance(true)}
-                disabled={isRunning}
+                disabled={isLocked}
                 data-testid={`edit-distance-${track.trackId}`}
               >
                 Edit
