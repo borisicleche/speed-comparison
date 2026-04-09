@@ -40,7 +40,7 @@ export const EngineControls = () => {
           disabled={!canStart}
           aria-disabled={!canStart}
         >
-          Start
+          {elapsedTimeSeconds > 0 ? "Resume" : "Start"}
         </Button>
         <Button
           variant={ButtonVariant.SECONDARY}

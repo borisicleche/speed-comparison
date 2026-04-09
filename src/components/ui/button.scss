@@ -37,6 +37,12 @@
   border-color: rgba(v.$color-line, 0.9);
 }
 
+.ui-button--secondary:not(:disabled) {
+  background: rgba(v.$color-ink-700, 0.85);
+  border-color: rgba(v.$color-text-muted, 0.6);
+  color: v.$color-text;
+}
+
 .ui-button--danger {
   background: linear-gradient(150deg, rgba(v.$color-accent-hot, 0.35), rgba(v.$color-accent-hot, 0.16));
   border-color: rgba(v.$color-accent-hot, 0.48);
