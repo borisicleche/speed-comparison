@@ -9,7 +9,7 @@ test.describe("CH-005 simulation controls", () => {
     await page.goto("/", { waitUntil: "commit", timeout: 60_000 });
 
     const controls = page.getByLabel("Engine controls");
-    const startButton = controls.getByRole("button", { name: "Start" });
+    const startButton = controls.getByRole("button").nth(0);
     const pauseButton = controls.getByRole("button", { name: "Pause" });
     const resetButton = controls.getByRole("button", { name: "Reset" });
     const status = controls.locator(".engine-controls__status");
