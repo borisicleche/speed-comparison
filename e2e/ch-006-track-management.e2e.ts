@@ -33,4 +33,35 @@ test.describe("CH-006 track management", () => {
     await expect(laneCount).toContainText("Lanes: 10 / 10");
     await expect(addLaneButton).toBeDisabled();
   });
+
+  test("lane object select and distance edit are disabled after start and re-enabled after reset", async ({
+    page,
+  }) => {
+    await page.goto("/", { waitUntil: "commit", timeout: 60_000 });
+
+    const controls = page.getByLabel("Engine controls");
+    const startButton = controls.getByRole("button", { name: "Start" });
+    const pauseButton = controls.getByRole("button", { name: "Pause" });
+    const resetButton = controls.getByRole("button", { name: "Reset" });
+
+    const objectSelect = page.getByTestId("track-object-select-track-1");
+    const editDistanceButton = page.getByTestId("edit-distance-track-1");
+
+    // At idle (zero position): controls are enabled
+    await expect(objectSelect).toBeEnabled();
+    await expect(editDistanceButton).toBeEnabled();
+
+    // Start then immediately pause
+    await startButton.click();
+    await pauseButton.click();
+
+    // Paused (non-zero position): controls are disabled
+    await expect(objectSelect).toBeDisabled();
+    await expect(editDistanceButton).toBeDisabled();
+
+    // Reset (back to zero position): controls re-enabled
+    await resetButton.click();
+    await expect(objectSelect).toBeEnabled();
+    await expect(editDistanceButton).toBeEnabled();
+  });
 });

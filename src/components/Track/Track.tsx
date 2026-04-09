@@ -1,4 +1,5 @@
-import { type CSSProperties } from "react";
+import { type CSSProperties, useEffect, useState } from "react";
+import React from "react";
 
 import { Badge } from "../ui/badge";
 import { Button, ButtonVariant } from "../ui/button";
@@ -9,31 +10,89 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card";
+import { Input } from "../ui/input";
 import { Select } from "../ui/select";
-import type { SpeedObject } from "../../data/speedObjects";
+import { SPEED_OBJECTS } from "../../data/speedObjects";
 import type { TrackVisualState } from "../../store/simulationSelectors";
-import { SpeedLengthUnit, SpeedTimeUnit } from "../../utils/unitConversion";
+import {
+  DistanceUnit,
+  SpeedLengthUnit,
+  SpeedTimeUnit,
+  metersToDistance,
+} from "../../utils/unitConversion";
 import "./Track.scss";
 
 type TrackProps = {
   track: TrackVisualState;
-  speedObjects: ReadonlyArray<SpeedObject>;
   canRemoveTrack: boolean;
-  onTrackObjectChange: (trackId: string, objectId: string) => void;
+  isLocked: boolean;
   onRemoveTrack: (trackId: string) => void;
+  onSetTrackDistance: (trackId: string, amount: number, unit: DistanceUnit) => void;
+  onClearTrackDistance: (trackId: string) => void;
+  onSetTrackObject: (trackId: string, objectId: string) => void;
 };
 
 export const Track = ({
   track,
-  speedObjects,
   canRemoveTrack,
-  onTrackObjectChange,
+  isLocked,
   onRemoveTrack,
+  onSetTrackDistance,
+  onClearTrackDistance,
+  onSetTrackObject,
 }: TrackProps) => {
   const runnerStyle = {
     "--progress-ratio": String(track.progressRatio),
   } as CSSProperties;
-  const selectId = `track-object-select-${track.trackId}`;
+  const distanceInputId = `track-distance-${track.trackId}`;
+  const [isEditingDistance, setIsEditingDistance] = useState(false);
+
+  const [draftAmount, setDraftAmount] = useState(() =>
+    formatDistanceAmount(
+      track.distanceOverride
+        ? track.distanceOverride.amount
+        : metersToDistance(track.effectiveTrackLengthMeters, DistanceUnit.METERS),
+    ),
+  );
+  const [draftUnit, setDraftUnit] = useState<DistanceUnit>(
+    track.distanceOverride?.unit ?? DistanceUnit.METERS,
+  );
+
+  useEffect(() => {
+    if (track.distanceOverride) {
+      setDraftAmount(formatDistanceAmount(track.distanceOverride.amount));
+      setDraftUnit(track.distanceOverride.unit);
+    } else {
+      setDraftAmount(
+        formatDistanceAmount(
+          metersToDistance(track.effectiveTrackLengthMeters, DistanceUnit.METERS),
+        ),
+      );
+      setDraftUnit(DistanceUnit.METERS);
+    }
+  }, [track.distanceOverride, track.effectiveTrackLengthMeters]);
+
+  const handleDistanceBlur = () => {
+    const parsed = Number.parseFloat(draftAmount.trim());
+
+    if (!Number.isFinite(parsed) || parsed <= 0) {
+      // Revert to current effective value
+      if (track.distanceOverride) {
+        setDraftAmount(formatDistanceAmount(track.distanceOverride.amount));
+        setDraftUnit(track.distanceOverride.unit);
+      } else {
+        setDraftAmount(
+          formatDistanceAmount(
+            metersToDistance(track.effectiveTrackLengthMeters, DistanceUnit.METERS),
+          ),
+        );
+      }
+
+      return;
+    }
+
+    onSetTrackDistance(track.trackId, parsed, draftUnit);
+  };
 
   return (
     <Card className="track-card" data-testid={`track-card-${track.trackId}`}>
@@ -41,6 +100,19 @@ export const Track = ({
         <div>
           <CardTitle>{track.objectName}</CardTitle>
           <CardDescription>{formatSpeed(track)}</CardDescription>
+          <Select
+            value={track.objectId}
+            disabled={isLocked}
+            onChange={(e) => onSetTrackObject(track.trackId, e.target.value)}
+            data-testid={`track-object-select-${track.trackId}`}
+            aria-label={`Object for ${track.trackId}`}
+          >
+            {SPEED_OBJECTS.map((obj) => (
+              <option key={obj.id} value={obj.id}>
+                {obj.name}
+              </option>
+            ))}
+          </Select>
         </div>
         <div className="track-card__header-right">
           {track.isFinished ? <Badge>Finished</Badge> : null}
@@ -57,26 +129,97 @@ export const Track = ({
       </CardHeader>
 
       <CardContent>
-        <div className="track-card__controls">
-          <label htmlFor={selectId}>Object</label>
-          <Select
-            id={selectId}
-            value={track.objectId}
-            onChange={(event) => onTrackObjectChange(track.trackId, event.target.value)}
-            data-testid={selectId}
-          >
-            {speedObjects.map((speedObject) => (
-              <option key={speedObject.id} value={speedObject.id}>
-                {speedObject.name}
-              </option>
-            ))}
-          </Select>
+        <div className="track-card__controls track-card__distance-override">
+          <label htmlFor={distanceInputId}>
+            Distance
+            {track.distanceOverride &&
+            track.distanceOverride.value !== track.globalTrackLengthMeters ? (
+              <button
+                type="button"
+                className="track-card__use-global"
+                onClick={() => {
+                  onClearTrackDistance(track.trackId);
+                  setIsEditingDistance(false);
+                }}
+                disabled={isLocked}
+                aria-label="Use global track length"
+                data-testid={`clear-distance-${track.trackId}`}
+              >
+                Use global
+              </button>
+            ) : (
+              <span className="track-card__global-badge">(global)</span>
+            )}
+          </label>
+          {isEditingDistance ? (
+            <div className="track-card__distance-edit">
+              <Input
+                id={distanceInputId}
+                type="number"
+                inputMode="decimal"
+                min="0.001"
+                step="1"
+                value={draftAmount}
+                disabled={isLocked}
+                onChange={(e) => setDraftAmount(e.target.value)}
+                onBlur={handleDistanceBlur}
+                data-testid={`track-distance-amount-${track.trackId}`}
+                autoFocus
+              />
+              <Select
+                value={draftUnit}
+                disabled={isLocked}
+                onChange={(e) => {
+                  const newUnit = e.target.value as DistanceUnit;
+                  setDraftUnit(newUnit);
+                  const parsed = Number.parseFloat(draftAmount.trim());
+                  if (Number.isFinite(parsed) && parsed > 0) {
+                    onSetTrackDistance(track.trackId, parsed, newUnit);
+                  }
+                }}
+                data-testid={`track-distance-unit-${track.trackId}`}
+              >
+                <option value={DistanceUnit.METERS}>m</option>
+                <option value={DistanceUnit.KILOMETERS}>km</option>
+              </Select>
+              <button
+                type="button"
+                className="track-card__distance-done"
+                onClick={() => setIsEditingDistance(false)}
+              >
+                Done
+              </button>
+            </div>
+          ) : (
+            <div className="track-card__distance-display">
+              <span
+                className="track-card__distance-value"
+                data-testid={`track-distance-amount-${track.trackId}`}
+              >
+                {draftAmount} {draftUnit}
+              </span>
+              <button
+                type="button"
+                className="track-card__distance-edit-btn"
+                onClick={() => setIsEditingDistance(true)}
+                disabled={isLocked}
+                data-testid={`edit-distance-${track.trackId}`}
+              >
+                Edit
+              </button>
+            </div>
+          )}
         </div>
+
         <div className="track-card__lane-scale" aria-hidden="true">
           <span>0 m</span>
-          <span>{formatMeters(track.trackLengthMeters)}</span>
+          <span>{formatMeters(track.effectiveTrackLengthMeters)}</span>
         </div>
-        <div className="track-card__lane" aria-label={`${track.objectName} lane`} data-progress={track.progressRatio}>
+        <div
+          className="track-card__lane"
+          aria-label={`${track.objectName} lane`}
+          data-progress={track.progressRatio}
+        >
           <div className="track-card__start" aria-hidden="true" />
           <div
             className="track-card__runner"
@@ -85,7 +228,11 @@ export const Track = ({
           >
             <span>{toRunnerCode(track.objectName)}</span>
           </div>
-          <div className="track-card__runner-value" style={runnerStyle} aria-hidden="true">
+          <div
+            className="track-card__runner-value"
+            style={runnerStyle}
+            aria-hidden="true"
+          >
             {formatMeters(track.clampedDistanceMeters)}
           </div>
           <div className="track-card__finish" aria-hidden="true" />
@@ -122,6 +269,18 @@ const formatMeters = (value: number): string => {
   const rounded = value >= 100 ? value.toFixed(0) : value.toFixed(1);
 
   return `${rounded} m`;
+};
+
+const formatDistanceAmount = (value: number): string => {
+  if (!Number.isFinite(value)) {
+    return "";
+  }
+
+  if (Number.isInteger(value)) {
+    return value.toString();
+  }
+
+  return value.toFixed(6).replace(/\.?0+$/, "");
 };
 
 const toRunnerCode = (objectName: string): string => {

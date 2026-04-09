@@ -10,6 +10,7 @@ import {
   SimulationActionType,
   type SimulationAction,
   type SimulationState,
+  type TrackDistanceOverride,
 } from "./simulationReducer";
 import { selectTrackVisualStates } from "./simulationSelectors";
 
@@ -27,10 +28,12 @@ export type SimulationStoreState = {
   pauseSimulation: () => void;
   resetSimulation: () => void;
   setDistance: (value: number, unit: DistanceUnit) => void;
-  addTrack: (objectId?: string) => void;
+  addTrack: (objectId?: string, distanceOverride?: TrackDistanceOverride) => void;
   removeTrack: (trackId: string) => void;
   setTrackObject: (trackId: string, objectId: string) => void;
   setPauseOnFinish: (enabled: boolean) => void;
+  setTrackDistance: (trackId: string, amount: number, unit: DistanceUnit) => void;
+  clearTrackDistance: (trackId: string) => void;
   destroyStore: () => void;
 };
 
@@ -113,8 +116,8 @@ export const createSimulationStore = (
       engine.setDistance(nextDistanceMeters);
       timeController.stop();
     },
-    addTrack: (objectId) => {
-      get().dispatch({ type: SimulationActionType.ADD_TRACK, objectId });
+    addTrack: (objectId, distanceOverride) => {
+      get().dispatch({ type: SimulationActionType.ADD_TRACK, objectId, distanceOverride });
     },
     removeTrack: (trackId) => {
       get().dispatch({ type: SimulationActionType.REMOVE_TRACK, trackId });
@@ -124,6 +127,16 @@ export const createSimulationStore = (
     },
     setPauseOnFinish: (enabled) => {
       get().dispatch({ type: SimulationActionType.SET_PAUSE_ON_FINISH, enabled });
+    },
+    setTrackDistance: (trackId, amount, unit) => {
+      if (!Number.isFinite(amount) || amount <= 0) {
+        return;
+      }
+
+      get().dispatch({ type: SimulationActionType.SET_TRACK_DISTANCE, trackId, amount, unit });
+    },
+    clearTrackDistance: (trackId) => {
+      get().dispatch({ type: SimulationActionType.CLEAR_TRACK_DISTANCE, trackId });
     },
     destroyStore: () => {
       unsubscribeEngine();

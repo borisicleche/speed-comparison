@@ -1,0 +1,89 @@
+@use "../../styles/variables" as v;
+
+.setup-panel {
+  width: 320px;
+  min-width: 320px;
+  background: rgba(v.$color-ink-800, 0.9);
+  border-right: 1px solid rgba(v.$color-line, 0.7);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.25rem;
+  overflow-y: auto;
+}
+
+.setup-panel__brand {
+  margin-bottom: 0.25rem;
+}
+
+.setup-panel__eyebrow {
+  margin: 0;
+  color: v.$color-accent-cool;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.setup-panel__title {
+  margin: 0.2rem 0 0;
+  font-family: v.$font-display;
+  font-size: 1.5rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.setup-panel__section-title {
+  margin: 0 0 0.65rem;
+  color: v.$color-text-muted;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.setup-panel__add-lane {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.setup-panel__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.setup-panel__label {
+  color: v.$color-text-muted;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.setup-panel__optional {
+  color: v.$color-text-muted;
+  font-weight: 400;
+  font-size: 0.7rem;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.setup-panel__override-inputs {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.4rem;
+}
+
+.setup-panel__lane-count {
+  margin: auto 0 0;
+  color: v.$color-text-muted;
+  font-size: 0.8rem;
+
+  span {
+    color: v.$color-text;
+    font-weight: 600;
+  }
+}

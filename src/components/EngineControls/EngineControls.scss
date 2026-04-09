@@ -1,0 +1,43 @@
+@use "../../styles/variables" as v;
+
+.engine-controls {
+  align-items: center;
+  background: rgba(v.$color-ink-800, 0.85);
+  border-bottom: 1px solid rgba(v.$color-line, 0.7);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  padding: 0.65rem 1rem;
+}
+
+.engine-controls__status {
+  margin: 0;
+  color: v.$color-text-muted;
+  font-size: 0.8rem;
+  min-width: 8rem;
+
+  span {
+    color: v.$color-text;
+    font-weight: 600;
+  }
+}
+
+.engine-controls__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.engine-controls__option {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: v.$color-text-muted;
+  font-size: 0.8rem;
+  cursor: pointer;
+  margin-left: auto;
+
+  input[type="checkbox"] {
+    accent-color: v.$color-accent-cool;
+    cursor: pointer;
+  }
+}
