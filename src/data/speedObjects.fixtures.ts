@@ -25,9 +25,9 @@ export const FINISH_TIME_FIXTURES: ReadonlyArray<FinishTimeFixture> = [
     expectedFinishSeconds: 72,
   },
   {
-    objectId: "airplane",
+    objectId: "plane-boeing-737",
     distance: { value: 1, unit: DistanceUnit.KILOMETERS },
-    expectedFinishSeconds: 4,
+    expectedFinishSeconds: 4.2755344418052256827,
   },
 ];
 

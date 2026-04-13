@@ -47,7 +47,7 @@ describe("simulationSelectors", () => {
     const initialState = createInitialSimulationState();
     const withThirdTrack = simulationReducer(initialState, {
       type: SimulationActionType.ADD_TRACK,
-      objectId: "airplane",
+      objectId: "plane-boeing-737",
     });
 
     const syncedState = simulationReducer(withThirdTrack, {
@@ -83,7 +83,7 @@ describe("simulationSelectors", () => {
     const initialState = createInitialSimulationState();
     const withFastTrack = simulationReducer(initialState, {
       type: SimulationActionType.ADD_TRACK,
-      objectId: "airplane",
+      objectId: "plane-boeing-737",
     });
 
     const syncedState = simulationReducer(withFastTrack, {
@@ -106,10 +106,10 @@ describe("simulationSelectors", () => {
 
   test("finished track freezes elapsed time at exact finish time", () => {
     const initialState = createInitialSimulationState();
-    // airplane: 900 km/h = 250 m/s, track 1000 m → finishes at 1000/250 = 4 s
+    // plane-boeing-737: 842 km/h ≈ 233.89 m/s, track 1000 m → finishes at 1000 / (842/3.6) ≈ 4.276 s
     const withAirplane = simulationReducer(initialState, {
       type: SimulationActionType.ADD_TRACK,
-      objectId: "airplane",
+      objectId: "plane-boeing-737",
     });
 
     const syncedState = simulationReducer(withAirplane, {
@@ -122,7 +122,7 @@ describe("simulationSelectors", () => {
     });
 
     const derived = selectTrackDerivedState(syncedState, "track-3");
-    expect(derived?.elapsedTimeSeconds).toBeCloseTo(4, 10);
+    expect(derived?.elapsedTimeSeconds).toBeCloseTo(1000 / (842 / 3.6), 10);
     expect(derived?.distanceMeters).toBe(1000);
   });
 
@@ -147,7 +147,7 @@ describe("simulationSelectors", () => {
     const initialState = createInitialSimulationState();
     const withAirplane = simulationReducer(initialState, {
       type: SimulationActionType.ADD_TRACK,
-      objectId: "airplane",
+      objectId: "plane-boeing-737",
     });
 
     const syncedState = simulationReducer(withAirplane, {
@@ -207,12 +207,12 @@ describe("simulationSelectors", () => {
   });
 
   test("isFinished uses effectiveTrackLengthMeters not global", () => {
-    // airplane: 900 km/h = 250 m/s. Override to 250 m → finishes at 1 s.
+    // plane-boeing-737: 842 km/h ≈ 233.89 m/s. Override to 250 m → finishes at ~1.07 s.
     // Global is 1000 m so without override it would NOT be finished at 2 s.
     const state = createInitialSimulationState();
     const withAirplane = simulationReducer(state, {
       type: SimulationActionType.ADD_TRACK,
-      objectId: "airplane",
+      objectId: "plane-boeing-737",
     });
     const withOverride = simulationReducer(withAirplane, {
       type: SimulationActionType.SET_TRACK_DISTANCE,

@@ -300,15 +300,15 @@ describe("simulationStore (zustand)", () => {
       },
     });
 
-    store.getState().addTrack("train");
+    store.getState().addTrack("train-commuter");
     expect(store.getState().simulationState.tracks[2]).toEqual({
       id: "track-3",
-      objectId: "train",
+      objectId: "train-commuter",
       distanceOverride: null,
     });
 
-    store.getState().setTrackObject("track-1", "cheetah");
-    expect(store.getState().simulationState.tracks[0].objectId).toBe("cheetah");
+    store.getState().setTrackObject("track-1", "animal-cheetah");
+    expect(store.getState().simulationState.tracks[0].objectId).toBe("animal-cheetah");
 
     store.getState().removeTrack("track-2");
     expect(store.getState().simulationState.tracks.map((track) => track.id)).toEqual([
@@ -352,7 +352,7 @@ describe("simulationStore (zustand)", () => {
       timeController: { start: () => {}, stop: () => {} },
     });
 
-    store.getState().addTrack("train", {
+    store.getState().addTrack("train-commuter", {
       amount: 2,
       unit: DistanceUnit.KILOMETERS,
       value: 2000,
@@ -406,7 +406,7 @@ describe("simulationStore (zustand)", () => {
       },
     });
 
-    store.getState().addTrack("train");
+    store.getState().addTrack("train-commuter");
     store.getState().startSimulation();
     engine.advanceTo(0);
     engine.advanceTo(3500);

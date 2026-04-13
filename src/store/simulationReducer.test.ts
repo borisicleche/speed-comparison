@@ -42,10 +42,10 @@ describe("simulationReducer", () => {
 
     const withAddedTrack = simulationReducer(state, {
       type: SimulationActionType.ADD_TRACK,
-      objectId: "train",
+      objectId: "train-commuter",
     });
 
-    expect(withAddedTrack.tracks[2]).toEqual({ id: "track-3", objectId: "train", distanceOverride: null });
+    expect(withAddedTrack.tracks[2]).toEqual({ id: "track-3", objectId: "train-commuter", distanceOverride: null });
 
     const withRemovedTrack = simulationReducer(withAddedTrack, {
       type: SimulationActionType.REMOVE_TRACK,
@@ -90,7 +90,7 @@ describe("simulationReducer", () => {
     };
     const unchangedState = simulationReducer(maxedState, {
       type: SimulationActionType.ADD_TRACK,
-      objectId: "train",
+      objectId: "train-commuter",
     });
 
     expect(unchangedState).toBe(maxedState);
@@ -110,10 +110,10 @@ describe("simulationReducer", () => {
     const changedState = simulationReducer(state, {
       type: SimulationActionType.SET_TRACK_OBJECT,
       trackId: "track-1",
-      objectId: "cheetah",
+      objectId: "animal-cheetah",
     });
 
-    expect(changedState.tracks[0].objectId).toBe("cheetah");
+    expect(changedState.tracks[0].objectId).toBe("animal-cheetah");
   });
 
   test("engine sync updates running state and elapsed time from shared clock", () => {
@@ -211,7 +211,7 @@ describe("simulationReducer", () => {
 
     const next = simulationReducer(state, {
       type: SimulationActionType.ADD_TRACK,
-      objectId: "train",
+      objectId: "train-commuter",
       distanceOverride: { amount: 2, unit: DistanceUnit.KILOMETERS, value: 2000 },
     });
 
