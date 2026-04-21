@@ -4,6 +4,7 @@ export type SimulationSnapshot = {
   elapsedTimeSeconds: number;
   isRunning: boolean;
   trackLengthMeters: number;
+  speedMultiplier: 1 | 2 | 3;
 };
 
 const DEFAULT_TRACK_LENGTH_METERS = 1000;
@@ -14,6 +15,7 @@ export class SimulationEngine {
   private trackLengthMeters = DEFAULT_TRACK_LENGTH_METERS;
   private lastFrameTimeMs: number | null = null;
   private listeners = new Set<SimulationListener>();
+  private speedMultiplier: 1 | 2 | 3 = 1;
 
   start(): void {
     if (this.isRunning) {
@@ -53,6 +55,12 @@ export class SimulationEngine {
     this.notify();
   }
 
+  setSpeedMultiplier(multiplier: 1 | 2 | 3): void {
+    if (this.speedMultiplier === multiplier) return;
+    this.speedMultiplier = multiplier;
+    this.notify();
+  }
+
   subscribe(listener: SimulationListener): () => void {
     this.listeners.add(listener);
 
@@ -70,6 +78,7 @@ export class SimulationEngine {
       elapsedTimeSeconds: this.elapsedTimeSeconds,
       isRunning: this.isRunning,
       trackLengthMeters: this.trackLengthMeters,
+      speedMultiplier: this.speedMultiplier,
     };
   }
 
@@ -90,7 +99,7 @@ export class SimulationEngine {
       return;
     }
 
-    this.elapsedTimeSeconds += deltaMs / 1000;
+    this.elapsedTimeSeconds += (deltaMs / 1000) * this.speedMultiplier;
     this.lastFrameTimeMs = frameTimeMs;
     this.notify();
   }

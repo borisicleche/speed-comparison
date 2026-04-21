@@ -46,6 +46,7 @@ describe("SimulationEngine", () => {
       elapsedTimeSeconds: 0,
       isRunning: false,
       trackLengthMeters: 1000,
+      speedMultiplier: 1,
     });
   });
 
@@ -62,6 +63,7 @@ describe("SimulationEngine", () => {
       elapsedTimeSeconds: 0,
       isRunning: false,
       trackLengthMeters: 5000,
+      speedMultiplier: 1,
     });
   });
 
@@ -107,5 +109,85 @@ describe("SimulationEngine", () => {
     engine.reset();
 
     expect(notifications).toBe(3);
+  });
+
+  test("setSpeedMultiplier(2) advances elapsed time at 2× rate", () => {
+    const engine = new SimulationEngine();
+
+    engine.setSpeedMultiplier(2);
+    engine.start();
+    engine.advanceTo(0);
+    engine.advanceTo(1000);
+
+    expect(engine.getElapsedTime()).toBeCloseTo(2, 12);
+  });
+
+  test("setSpeedMultiplier(3) advances elapsed time at 3× rate", () => {
+    const engine = new SimulationEngine();
+
+    engine.setSpeedMultiplier(3);
+    engine.start();
+    engine.advanceTo(0);
+    engine.advanceTo(1000);
+
+    expect(engine.getElapsedTime()).toBeCloseTo(3, 12);
+  });
+
+  test("getSnapshot includes speedMultiplier and reflects setSpeedMultiplier", () => {
+    const engine = new SimulationEngine();
+
+    expect(engine.getSnapshot().speedMultiplier).toBe(1);
+
+    engine.setSpeedMultiplier(2);
+    expect(engine.getSnapshot().speedMultiplier).toBe(2);
+  });
+
+  test("reset does not clear speedMultiplier", () => {
+    const engine = new SimulationEngine();
+
+    engine.setSpeedMultiplier(3);
+    engine.start();
+    engine.advanceTo(0);
+    engine.advanceTo(500);
+    engine.reset();
+
+    expect(engine.getSnapshot().speedMultiplier).toBe(3);
+  });
+
+  test("setDistance does not clear speedMultiplier", () => {
+    const engine = new SimulationEngine();
+
+    engine.setSpeedMultiplier(2);
+    engine.setDistance(2000);
+
+    expect(engine.getSnapshot().speedMultiplier).toBe(2);
+  });
+
+  test("setSpeedMultiplier notifies subscribers", () => {
+    const engine = new SimulationEngine();
+    let notifications = 0;
+    engine.subscribe(() => { notifications += 1; });
+
+    engine.setSpeedMultiplier(2);
+    expect(notifications).toBe(1);
+
+    engine.setSpeedMultiplier(2); // same value — no notification
+    expect(notifications).toBe(1);
+
+    engine.setSpeedMultiplier(3);
+    expect(notifications).toBe(2);
+  });
+
+  test("changing speedMultiplier mid-simulation applies to subsequent frames", () => {
+    const engine = new SimulationEngine();
+
+    engine.start();
+    engine.advanceTo(0);
+    engine.advanceTo(1000); // 1s elapsed at 1×
+
+    engine.setSpeedMultiplier(3);
+    engine.advanceTo(2000); // 1s wall-clock at 3× = 3s more
+
+    expect(engine.getElapsedTime()).toBeCloseTo(4, 12);
   });
 });
