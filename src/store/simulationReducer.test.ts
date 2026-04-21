@@ -13,7 +13,7 @@ describe("simulationReducer", () => {
     const state = createInitialSimulationState();
 
     expect(state.tracks.map((track) => track.id)).toEqual(["track-1", "track-2"]);
-    expect(state.engine).toEqual({ elapsedTimeSeconds: 0, isRunning: false });
+    expect(state.engine).toEqual({ elapsedTimeSeconds: 0, isRunning: false, speedMultiplier: 1 });
     expect(state.distance).toEqual({
       amount: 1,
       unit: DistanceUnit.KILOMETERS,
@@ -122,6 +122,7 @@ describe("simulationReducer", () => {
       elapsedTimeSeconds: 3.25,
       isRunning: true,
       trackLengthMeters: 500,
+      speedMultiplier: 1,
     };
 
     const nextState = simulationReducer(state, {
@@ -129,7 +130,7 @@ describe("simulationReducer", () => {
       snapshot,
     });
 
-    expect(nextState.engine).toEqual({ elapsedTimeSeconds: 3.25, isRunning: true });
+    expect(nextState.engine).toEqual({ elapsedTimeSeconds: 3.25, isRunning: true, speedMultiplier: 1 });
     expect(nextState.distance.value).toBe(500);
     expect(nextState.distance.amount).toBe(0.5);
     expect(nextState.tracks).toEqual(state.tracks);
@@ -154,5 +155,29 @@ describe("simulationReducer", () => {
       enabled: false,
     });
     expect(disabled.pauseOnFinish).toBe(false);
+  });
+
+  test("initial state has speedMultiplier 1", () => {
+    const state = createInitialSimulationState();
+
+    expect(state.engine.speedMultiplier).toBe(1);
+  });
+
+  test("ENGINE_SYNC propagates speedMultiplier from snapshot", () => {
+    const state = createInitialSimulationState();
+
+    const snapshot: SimulationSnapshot = {
+      elapsedTimeSeconds: 1.5,
+      isRunning: true,
+      trackLengthMeters: 1000,
+      speedMultiplier: 3,
+    };
+
+    const nextState = simulationReducer(state, {
+      type: SimulationActionType.ENGINE_SYNC,
+      snapshot,
+    });
+
+    expect(nextState.engine.speedMultiplier).toBe(3);
   });
 });

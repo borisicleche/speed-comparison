@@ -1,10 +1,12 @@
+import type { SpeedMultiplier } from "../utils/speedMultiplier";
+
 export type SimulationListener = () => void;
 
 export type SimulationSnapshot = {
   elapsedTimeSeconds: number;
   isRunning: boolean;
   trackLengthMeters: number;
-  speedMultiplier: 1 | 2 | 3;
+  speedMultiplier: SpeedMultiplier;
 };
 
 const DEFAULT_TRACK_LENGTH_METERS = 1000;
@@ -15,7 +17,7 @@ export class SimulationEngine {
   private trackLengthMeters = DEFAULT_TRACK_LENGTH_METERS;
   private lastFrameTimeMs: number | null = null;
   private listeners = new Set<SimulationListener>();
-  private speedMultiplier: 1 | 2 | 3 = 1;
+  private speedMultiplier: SpeedMultiplier = 1;
 
   start(): void {
     if (this.isRunning) {
@@ -55,7 +57,7 @@ export class SimulationEngine {
     this.notify();
   }
 
-  setSpeedMultiplier(multiplier: 1 | 2 | 3): void {
+  setSpeedMultiplier(multiplier: SpeedMultiplier): void {
     if (this.speedMultiplier === multiplier) return;
     this.speedMultiplier = multiplier;
     this.notify();

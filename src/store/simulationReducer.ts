@@ -5,6 +5,9 @@ import {
   metersToDistance,
   DistanceUnit,
 } from "../utils/unitConversion";
+import type { SpeedMultiplier } from "../utils/speedMultiplier";
+
+export type { SpeedMultiplier } from "../utils/speedMultiplier";
 
 const DEFAULT_MAX_TRACKS = 10;
 
@@ -24,6 +27,7 @@ export type DistanceState = {
 export type SimulationEngineState = {
   elapsedTimeSeconds: number;
   isRunning: boolean;
+  speedMultiplier: SpeedMultiplier;
 };
 
 export type SimulationState = {
@@ -65,6 +69,7 @@ export const createInitialSimulationState = (): SimulationState => {
     engine: {
       elapsedTimeSeconds: 0,
       isRunning: false,
+      speedMultiplier: 1,
     },
     maxTracks: DEFAULT_MAX_TRACKS,
     pauseOnFinish: false,
@@ -85,6 +90,7 @@ export const simulationReducer = (
         engine: {
           elapsedTimeSeconds: action.snapshot.elapsedTimeSeconds,
           isRunning: action.snapshot.isRunning,
+          speedMultiplier: action.snapshot.speedMultiplier,
         },
         distance: isTrackLengthChanged
           ? {

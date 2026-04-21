@@ -211,6 +211,7 @@ describe("simulationStore (zustand)", () => {
     expect(store.getState().simulationState.engine).toEqual({
       elapsedTimeSeconds: 0,
       isRunning: false,
+      speedMultiplier: 1,
     });
   });
 
@@ -339,6 +340,7 @@ describe("simulationStore (zustand)", () => {
       elapsedTimeSeconds: 0,
       isRunning: false,
       trackLengthMeters: 1000,
+      speedMultiplier: 1,
     });
 
     store.getState().startSimulation();
