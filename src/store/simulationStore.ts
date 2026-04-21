@@ -10,6 +10,7 @@ import {
   SimulationActionType,
   type SimulationAction,
   type SimulationState,
+  type SpeedMultiplier,
 } from "./simulationReducer";
 import { selectTrackVisualStates } from "./simulationSelectors";
 
@@ -31,6 +32,7 @@ export type SimulationStoreState = {
   removeTrack: (trackId: string) => void;
   setTrackObject: (trackId: string, objectId: string) => void;
   setPauseOnFinish: (enabled: boolean) => void;
+  setSpeedMultiplier: (multiplier: SpeedMultiplier) => void;
   destroyStore: () => void;
 };
 
@@ -124,6 +126,9 @@ export const createSimulationStore = (
     },
     setPauseOnFinish: (enabled) => {
       get().dispatch({ type: SimulationActionType.SET_PAUSE_ON_FINISH, enabled });
+    },
+    setSpeedMultiplier: (multiplier) => {
+      engine.setSpeedMultiplier(multiplier);
     },
     destroyStore: () => {
       unsubscribeEngine();

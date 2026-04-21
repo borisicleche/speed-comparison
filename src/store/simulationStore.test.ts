@@ -484,4 +484,40 @@ describe("simulationStore (zustand)", () => {
       globalThis.cancelAnimationFrame = originalCancelRaf;
     }
   });
+
+  test("setSpeedMultiplier updates simulationState.engine.speedMultiplier", () => {
+    const engine = new SimulationEngine();
+    const store = createSimulationStore({
+      engine,
+      timeController: { start: () => {}, stop: () => {} },
+    });
+
+    expect(store.getState().simulationState.engine.speedMultiplier).toBe(1);
+
+    store.getState().setSpeedMultiplier(2);
+    expect(store.getState().simulationState.engine.speedMultiplier).toBe(2);
+
+    store.getState().setSpeedMultiplier(3);
+    expect(store.getState().simulationState.engine.speedMultiplier).toBe(3);
+
+    store.getState().setSpeedMultiplier(1);
+    expect(store.getState().simulationState.engine.speedMultiplier).toBe(1);
+  });
+
+  test("setSpeedMultiplier mid-run scales subsequent advances", () => {
+    const engine = new SimulationEngine();
+    const store = createSimulationStore({
+      engine,
+      timeController: { start: () => {}, stop: () => {} },
+    });
+
+    store.getState().startSimulation();
+    engine.advanceTo(0);
+    engine.advanceTo(1000); // 1s at 1×
+
+    store.getState().setSpeedMultiplier(2);
+    engine.advanceTo(2000); // 1s at 2× = +2s → total 3s
+
+    expect(store.getState().simulationState.engine.elapsedTimeSeconds).toBeCloseTo(3, 12);
+  });
 });
