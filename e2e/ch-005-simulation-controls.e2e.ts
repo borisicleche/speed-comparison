@@ -8,13 +8,13 @@ test.describe("CH-005 simulation controls", () => {
   }) => {
     await page.goto("/", { waitUntil: "commit", timeout: 60_000 });
 
-    const controls = page.getByLabel("Simulation controls");
-    const startButton = controls.getByRole("button", { name: "Start" });
+    const controls = page.getByLabel("Engine controls");
+    const startButton = controls.getByRole("button").nth(0);
     const pauseButton = controls.getByRole("button", { name: "Pause" });
     const resetButton = controls.getByRole("button", { name: "Reset" });
-    const status = controls.locator(".simulation-controls__status");
+    const status = controls.locator(".engine-controls__status");
 
-    await expect(status).toContainText("Status: Idle");
+    await expect(status).toContainText("Idle");
     await expect(startButton).toBeEnabled();
     await expect(pauseButton).toBeDisabled();
     await expect(resetButton).toBeDisabled();
@@ -25,7 +25,7 @@ test.describe("CH-005 simulation controls", () => {
     expect(initialProgressTrackTwo).toBe(0);
 
     await startButton.click();
-    await expect(status).toContainText("Status: Running");
+    await expect(status).toContainText("Running");
     await expect(startButton).toBeDisabled();
     await expect(pauseButton).toBeEnabled();
     await expect(resetButton).toBeEnabled();
@@ -42,7 +42,7 @@ test.describe("CH-005 simulation controls", () => {
     expect(Math.abs(runningElapsedTrackOne - runningElapsedTrackTwo)).toBeLessThan(0.05);
 
     await pauseButton.click();
-    await expect(status).toContainText("Status: Paused");
+    await expect(status).toContainText("Paused");
     await expect(startButton).toBeEnabled();
     await expect(pauseButton).toBeDisabled();
     await expect(resetButton).toBeEnabled();
@@ -53,7 +53,7 @@ test.describe("CH-005 simulation controls", () => {
     expect(Math.abs(pausedProgressTrackOneAfterWait - pausedProgressTrackOne)).toBeLessThan(0.01);
 
     await resetButton.click();
-    await expect(status).toContainText("Status: Idle");
+    await expect(status).toContainText("Idle");
     await expect(startButton).toBeEnabled();
     await expect(pauseButton).toBeDisabled();
     await expect(resetButton).toBeDisabled();

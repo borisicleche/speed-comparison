@@ -10,9 +10,16 @@ const DEFAULT_MAX_TRACKS = 10;
 
 type TrackId = `track-${number}`;
 
+export type TrackDistanceOverride = {
+  amount: number;
+  unit: DistanceUnit;
+  value: number; // canonical meters
+};
+
 export type SimulationTrack = {
   id: TrackId;
   objectId: string;
+  distanceOverride: TrackDistanceOverride | null;
 };
 
 export type DistanceState = {
@@ -41,21 +48,25 @@ export enum SimulationActionType {
   REMOVE_TRACK = "REMOVE_TRACK",
   SET_TRACK_OBJECT = "SET_TRACK_OBJECT",
   SET_PAUSE_ON_FINISH = "SET_PAUSE_ON_FINISH",
+  SET_TRACK_DISTANCE = "SET_TRACK_DISTANCE",
+  CLEAR_TRACK_DISTANCE = "CLEAR_TRACK_DISTANCE",
 }
 
 export type SimulationAction =
   | { type: SimulationActionType.ENGINE_SYNC; snapshot: SimulationSnapshot }
   | { type: SimulationActionType.SET_DISTANCE; value: number; unit: DistanceUnit }
-  | { type: SimulationActionType.ADD_TRACK; objectId?: string }
+  | { type: SimulationActionType.ADD_TRACK; objectId?: string; distanceOverride?: TrackDistanceOverride }
   | { type: SimulationActionType.REMOVE_TRACK; trackId: string }
   | { type: SimulationActionType.SET_TRACK_OBJECT; trackId: string; objectId: string }
-  | { type: SimulationActionType.SET_PAUSE_ON_FINISH; enabled: boolean };
+  | { type: SimulationActionType.SET_PAUSE_ON_FINISH; enabled: boolean }
+  | { type: SimulationActionType.SET_TRACK_DISTANCE; trackId: string; amount: number; unit: DistanceUnit }
+  | { type: SimulationActionType.CLEAR_TRACK_DISTANCE; trackId: string };
 
 export const createInitialSimulationState = (): SimulationState => {
   return {
     tracks: [
-      { id: "track-1", objectId: DEFAULT_SPEED_OBJECT_IDS.primary },
-      { id: "track-2", objectId: DEFAULT_SPEED_OBJECT_IDS.secondary },
+      { id: "track-1", objectId: DEFAULT_SPEED_OBJECT_IDS.primary, distanceOverride: null },
+      { id: "track-2", objectId: DEFAULT_SPEED_OBJECT_IDS.secondary, distanceOverride: null },
     ],
     distance: {
       amount: 1,
@@ -118,7 +129,20 @@ export const simulationReducer = (
 
       return {
         ...state,
-        tracks: [...state.tracks, { id: nextTrackId, objectId }],
+        tracks: [
+          ...state.tracks,
+          {
+            id: nextTrackId,
+            objectId,
+            distanceOverride: action.distanceOverride
+              ? {
+                  amount: action.distanceOverride.amount,
+                  unit: action.distanceOverride.unit,
+                  value: distanceToMeters(action.distanceOverride.amount, action.distanceOverride.unit),
+                }
+              : null,
+          },
+        ],
       };
     }
     case SimulationActionType.REMOVE_TRACK: {
@@ -132,10 +156,7 @@ export const simulationReducer = (
         return state;
       }
 
-      return {
-        ...state,
-        tracks: nextTracks,
-      };
+      return { ...state, tracks: nextTracks };
     }
     case SimulationActionType.SET_TRACK_OBJECT: {
       if (!SPEED_OBJECTS_BY_ID.has(action.objectId)) {
@@ -150,9 +171,34 @@ export const simulationReducer = (
 
         changed = true;
 
+        return { ...track, objectId: action.objectId };
+      });
+
+      if (!changed) {
+        return state;
+      }
+
+      return { ...state, tracks: nextTracks };
+    }
+    case SimulationActionType.SET_PAUSE_ON_FINISH: {
+      return { ...state, pauseOnFinish: action.enabled };
+    }
+    case SimulationActionType.SET_TRACK_DISTANCE: {
+      let changed = false;
+      const nextTracks = state.tracks.map((track) => {
+        if (track.id !== action.trackId) {
+          return track;
+        }
+
+        changed = true;
+
         return {
           ...track,
-          objectId: action.objectId,
+          distanceOverride: {
+            amount: action.amount,
+            unit: action.unit,
+            value: distanceToMeters(action.amount, action.unit),
+          },
         };
       });
 
@@ -160,16 +206,25 @@ export const simulationReducer = (
         return state;
       }
 
-      return {
-        ...state,
-        tracks: nextTracks,
-      };
+      return { ...state, tracks: nextTracks };
     }
-    case SimulationActionType.SET_PAUSE_ON_FINISH: {
-      return {
-        ...state,
-        pauseOnFinish: action.enabled,
-      };
+    case SimulationActionType.CLEAR_TRACK_DISTANCE: {
+      let changed = false;
+      const nextTracks = state.tracks.map((track) => {
+        if (track.id !== action.trackId || track.distanceOverride === null) {
+          return track;
+        }
+
+        changed = true;
+
+        return { ...track, distanceOverride: null };
+      });
+
+      if (!changed) {
+        return state;
+      }
+
+      return { ...state, tracks: nextTracks };
     }
     default: {
       return state;

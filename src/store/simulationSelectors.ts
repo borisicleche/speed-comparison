@@ -6,7 +6,11 @@ import {
   SpeedTimeUnit,
 } from "../utils/unitConversion";
 import { deriveTrackPosition } from "../utils/trackPosition";
-import type { SimulationState, SimulationTrack } from "./simulationReducer";
+import type {
+  SimulationState,
+  SimulationTrack,
+  TrackDistanceOverride,
+} from "./simulationReducer";
 
 export type TrackDerivedState = {
   trackId: string;
@@ -19,10 +23,12 @@ export type TrackDerivedState = {
   speedMetersPerSecond: number;
   elapsedTimeSeconds: number;
   distanceMeters: number;
+  effectiveTrackLengthMeters: number;
+  globalTrackLengthMeters: number;
+  distanceOverride: TrackDistanceOverride | null;
 };
 
 export type TrackVisualState = TrackDerivedState & {
-  trackLengthMeters: number;
   clampedDistanceMeters: number;
   remainingDistanceMeters: number;
   progressRatio: number;
@@ -51,20 +57,19 @@ export const selectTrackDerivedState = (
     return undefined;
   }
 
+  const effectiveTrackLengthMeters =
+    track.distanceOverride?.value ?? state.distance.value;
+
   const speedValue = speedObject.averageSpeedKmh;
   const speedTimeUnit = SpeedTimeUnit.HOURS;
   const speedLengthUnit = SpeedLengthUnit.KILOMETERS;
-  const speedMs = speedToMetersPerSecond(
-    speedValue,
-    speedLengthUnit,
-    speedTimeUnit,
-  );
+  const speedMs = speedToMetersPerSecond(speedValue, speedLengthUnit, speedTimeUnit);
   const naturalDistanceMeters = speedMs * state.engine.elapsedTimeSeconds;
-  const isFinished = naturalDistanceMeters >= state.distance.value;
+  const isFinished = naturalDistanceMeters >= effectiveTrackLengthMeters;
   const effectiveElapsedSeconds = isFinished
-    ? state.distance.value / speedMs
+    ? effectiveTrackLengthMeters / speedMs
     : state.engine.elapsedTimeSeconds;
-  const distanceMeters = isFinished ? state.distance.value : naturalDistanceMeters;
+  const distanceMeters = isFinished ? effectiveTrackLengthMeters : naturalDistanceMeters;
 
   return {
     trackId: track.id,
@@ -77,6 +82,9 @@ export const selectTrackDerivedState = (
     speedMetersPerSecond: speedMs,
     elapsedTimeSeconds: effectiveElapsedSeconds,
     distanceMeters,
+    effectiveTrackLengthMeters,
+    globalTrackLengthMeters: state.distance.value,
+    distanceOverride: track.distanceOverride,
   };
 };
 
@@ -92,12 +100,11 @@ export const selectTrackVisualState = (
 
   const trackPosition = deriveTrackPosition(
     trackDerivedState.distanceMeters,
-    state.distance.value,
+    trackDerivedState.effectiveTrackLengthMeters,
   );
 
   return {
     ...trackDerivedState,
-    trackLengthMeters: state.distance.value,
     clampedDistanceMeters: trackPosition.clampedDistanceMeters,
     remainingDistanceMeters: trackPosition.remainingDistanceMeters,
     progressRatio: trackPosition.progressRatio,
